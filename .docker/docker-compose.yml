@@ -1,0 +1,34 @@
+version: '3.7'
+services:
+  prod-db:
+    container_name: prod-db
+    image: postgres:16.4
+    ports:
+      - "5403:5432"
+    volumes:
+      - prod-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: praha
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+      TZ: "Asia/Tokyo"
+  dev-db:
+    container_name: dev-db
+    image: postgres:16.4
+    ports:
+      - "5404:5432"
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: praha
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+      TZ: "Asia/Tokyo"
+
+volumes:
+  prod-db-data:
+    driver: local
+  dev-db-data:
+    driver: local
