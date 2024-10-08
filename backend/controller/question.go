@@ -12,7 +12,7 @@ import (
 func GetQuestions(c *gin.Context) {
 	var questions []models.Question
 
-	if err := database.DB.Find(&questions).Error; err != nil {
+	if err := database.DB.Preload("Category").Find(&questions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
