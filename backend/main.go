@@ -19,11 +19,11 @@ func setupDatabase() {
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
-	r.GET("/question_categories", controller.GetQuestionCategories)
-	r.POST("/question_categories", controller.CreateQuestionCategory)
+	r.GET("/tasks", controller.GetTasks)
+	r.POST("/tasks", controller.CreateTask)
 
-	r.GET("/questions", controller.GetQuestions)
-	r.POST("/questions", controller.CreateQuestion)
+	r.GET("/task_genres", controller.GetTaskGenres)
+	r.POST("/task_genres", controller.CreateTaskGenre)
 
 	return r
 }

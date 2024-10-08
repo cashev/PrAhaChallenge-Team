@@ -9,28 +9,28 @@ import (
 	"github.com/cashev/PrAhaChallenge-Team/backend/models"
 )
 
-func GetQuestionCategories(c *gin.Context) {
-	var categories []models.QuestionCategory
+func GetTaskGenres(c *gin.Context) {
+	var taskGenres []models.TaskGenre
 
-	if err := database.DB.Find(&categories).Error; err != nil {
+	if err := database.DB.Find(&taskGenres).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"questions": categories})
+	c.JSON(http.StatusOK, gin.H{"taskGenres": taskGenres})
 }
 
-func CreateQuestionCategory(c *gin.Context) {
-	var qc models.QuestionCategory
+func CreateTaskGenre(c *gin.Context) {
+	var taskGenre models.TaskGenre
 
-	if err := c.ShouldBind(&qc); err != nil {
+	if err := c.ShouldBind(&taskGenre); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := database.DB.Create(&qc).Error; err != nil {
+	if err := database.DB.Create(&taskGenre).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"question": qc})
+	c.JSON(http.StatusOK, gin.H{"taskGenre": taskGenre})
 }
