@@ -10,4 +10,4 @@ run:
 # 	go test -v ./... -tags=integration
 
 migrate:
-	atlas migrate apply --env gorm --url "$(DATABASE_URL)?search_path=public&sslmode=disable"
+	atlas migrate apply --env gorm --url "$(DATABASE_URL)?search_path=public&sslmode=$(DATABASE_SSLMODE)"
