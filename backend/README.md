@@ -12,9 +12,7 @@ curl -sSf https://atlasgo.sh | sh
 ## migrationファイルを適用する
 
 ```sh
-atlas migrate apply \
-  --env gorm \
-  --url "postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?search_path=public&sslmode=disable"
+make migrate
 ```
 
 ## modelsを変更する
