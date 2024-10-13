@@ -10,4 +10,4 @@ run:
 # 	go test -v ./... -tags=integration
 
 migrate:
-	atlas migrate apply --env gorm --url "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?search_path=public&sslmode=disable"
+	atlas migrate apply --env gorm --url "$(DATABASE_URL)?search_path=public&sslmode=disable"
