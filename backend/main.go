@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/cashev/PrAhaChallenge-Team/backend/controller"
 	"github.com/cashev/PrAhaChallenge-Team/backend/database"
 	"github.com/gin-gonic/gin"
@@ -9,7 +11,8 @@ import (
 func main() {
 	setupDatabase()
 	r := setupRouter()
-	r.Run(":8080")
+	port := os.Getenv("PORT")
+	r.Run(":" + port)
 }
 
 func setupDatabase() {
