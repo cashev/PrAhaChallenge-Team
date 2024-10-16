@@ -1,5 +1,5 @@
 import React from "react";
-import { fetchTasks, fetchTaskGenres } from "@/lib/backend/tasks";
+import { fetchTasks } from "@/lib/backend/tasks";
 
 import Link from "next/link";
 import TaskTable from "@/app/components/TaskTable";
