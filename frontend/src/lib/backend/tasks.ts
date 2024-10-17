@@ -8,7 +8,6 @@ export async function fetchTasks(): Promise<Task[]> {
 }
 
 export async function createTask(title: string, genre: TaskGenre, text: string): Promise<void> {
-  console.log(JSON.stringify({ Title: title, TaskGenre: genre, Text: text }));
   await fetch(`${process.env.BACKEND_URL}/tasks`, {
     method: "POST",
     headers: {
@@ -35,18 +34,18 @@ export async function deleteTask(task: Task): Promise<void> {
 }
 
 export async function fetchTaskGenres(): Promise<TaskGenre[]> {
-  const response = await fetch(`${process.env.BACKEND_URL}/task_genres`);
+  const response = await fetch(`${process.env.BACKEND_URL}/task_genres`, { next: { revalidate: 0 } });
   const { taskGenres } = await response.json();
   return taskGenres;
 }
 
-export async function createTaskGenre(name: string): Promise<void> {
+export async function createTaskGenre(genreName: string): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/task_genres`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ GenreName: genreName }),
   });
 }
 

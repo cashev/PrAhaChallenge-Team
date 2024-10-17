@@ -32,12 +32,19 @@ func GetTaskGenre(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"taskGenre": taskGenre})
 }
 
-func CreateTaskGenre(c *gin.Context) {
-	var taskGenre models.TaskGenre
+type CreateTaskGenreRequest struct {
+	GenreName string `json:"GenreName" binding:"required"`
+}
 
-	if err := c.ShouldBind(&taskGenre); err != nil {
+func CreateTaskGenre(c *gin.Context) {
+	var request CreateTaskGenreRequest
+
+	if err := c.ShouldBind(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	taskGenre := models.TaskGenre{
+		GenreName: request.GenreName,
 	}
 	if err := database.DB.Create(&taskGenre).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
