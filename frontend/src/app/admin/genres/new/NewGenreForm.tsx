@@ -19,16 +19,8 @@ const NewGenreForm: React.FC<NewGenreFormProps> = ({ handleCreateGenre }) => {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    try {
-      const result = await handleCreateGenre(formData);
-      if (result.success) {
-        router.push('/admin/tasks');
-      } else {
-        setError(result.error || 'ジャンルの作成に失敗しました。もう一度お試しください。');
-      }
-    } catch (err) {
-      setError('ジャンルの作成に失敗しました。もう一度お試しください。');
-    }
+    await handleCreateGenre(formData);
+    router.push('/admin/tasks');
   };
 
   return (
