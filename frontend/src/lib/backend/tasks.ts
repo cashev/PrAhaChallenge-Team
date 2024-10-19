@@ -27,8 +27,8 @@ export async function updateTask(task: Task): Promise<void> {
   });
 }
 
-export async function deleteTask(task: Task): Promise<void> {
-  await fetch(`${process.env.BACKEND_URL}/tasks/delete/${task.ID}`, {
+export async function deleteTask(taskId: number): Promise<void> {
+  await fetch(`${process.env.BACKEND_URL}/tasks/delete/${taskId}`, {
     method: "POST",
   });
 }
