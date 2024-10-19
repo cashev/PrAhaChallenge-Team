@@ -7,19 +7,15 @@ const TasksPage: React.FC = async () => {
   const tasks = await fetchTasks();
 
   return (
-    <div>
-      <div className="mb-8 flex justify-between items-center">
+    <div className="max-w-4xl mx-auto py-8">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           課題一覧
         </h1>
-        <div className="space-x-4">
-          <Link href="/admin/tasks/new" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            課題追加
-          </Link>
-          <Link href="/admin/genres/new" className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-            ジャンル追加
-          </Link>
-        </div>
+        <Link href="/admin/tasks/new"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          新規課題作成
+        </Link>
       </div>
       <TaskTable tasks={tasks} />
     </div>
