@@ -2,6 +2,7 @@ import React from 'react';
 import TaskForm from '@/app/components/TaskForm';
 import { fetchTaskGenres, createTask } from '@/lib/backend/tasks';
 import { TaskGenre } from '@/lib/backend/types/task-genre';
+import { revalidatePath } from 'next/cache';
 
 
 export default async function NewTaskPage() {
@@ -10,6 +11,7 @@ export default async function NewTaskPage() {
   async function handleCreateTask(title: string, genre: TaskGenre, text: string) {
     'use server';
     await createTask(title, genre, text);
+    revalidatePath('/admin/tasks');
   }
 
   return (
@@ -17,7 +19,7 @@ export default async function NewTaskPage() {
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div className="px-4 py-5 sm:p-6">
           <h1 className="text-lg leading-6 font-medium text-gray-900">新規課題作成</h1>
-          <TaskForm genres={genres} createTask={handleCreateTask} />
+          <TaskForm genres={genres} onSubmit={handleCreateTask} />
         </div>
       </div>
     </div>

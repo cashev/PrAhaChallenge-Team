@@ -1,19 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TaskGenre } from '@/lib/backend/types/task-genre';
+import { Task } from '@/lib/backend/types/task';
 import { useRouter } from 'next/navigation';
 
 interface TaskFormProps {
   genres: TaskGenre[];
-  createTask: (title: string, genre: TaskGenre, text: string) => Promise<void>;
+  initialTask?: Task;
+  onSubmit: (title: string, genre: TaskGenre, text: string) => Promise<void>;
 }
 
-export default function TaskForm({ genres, createTask  }: TaskFormProps) {
+export default function TaskForm({ genres, initialTask, onSubmit }: TaskFormProps) {
   const router = useRouter();
-  const [title, setTitle] = useState('');
-  const [text, setText] = useState('');
-  const [genreId, setGenreId] = useState('');
+  const [title, setTitle] = useState(initialTask?.Title || '');
+  const [text, setText] = useState(initialTask?.Text || '');
+  const [genreId, setGenreId] = useState(initialTask?.TaskGenre.ID.toString() || '');
+
+  useEffect(() => {
+    if (initialTask) {
+      setTitle(initialTask.Title);
+      setText(initialTask.Text);
+      setGenreId(initialTask.TaskGenre.ID.toString());
+    }
+  }, [initialTask]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +32,7 @@ export default function TaskForm({ genres, createTask  }: TaskFormProps) {
       alert('All fields are required');
       return;
     }
-    await createTask(title, genre, text);
+    await onSubmit(title, genre, text);
     router.push('/admin/tasks');
   };
 
@@ -81,7 +91,7 @@ export default function TaskForm({ genres, createTask  }: TaskFormProps) {
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          作成
+          {initialTask ? '更新' : '作成'}
         </button>
       </div>
     </form>

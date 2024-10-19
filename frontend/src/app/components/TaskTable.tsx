@@ -1,11 +1,19 @@
 import React from "react";
 import { Task } from "@/lib/backend/types/task";
 import TaskRow from "./TaskRow";
+import { deleteTask } from "@/lib/backend/tasks";
+import { revalidatePath } from "next/cache";
 
 
 interface TaskTableProps {
   tasks: Task[];
 }
+
+const handleDeleteTask = async (taskId: number) => {
+  'use server';
+  await deleteTask(taskId);
+  revalidatePath('/admin/tasks');
+};
 
 const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
   return (
@@ -17,11 +25,12 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">タイトル</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ジャンル</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">本文</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {tasks.map((task) => (
-              <TaskRow key={task.ID} task={task} />
+              <TaskRow key={task.ID} task={task} onDelete={handleDeleteTask} />
             ))}
           </tbody>
         </table>

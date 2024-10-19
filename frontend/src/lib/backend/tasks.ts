@@ -2,9 +2,15 @@ import { Task,  } from "@/lib/backend/types/task";
 import { TaskGenre } from "@/lib/backend/types/task-genre";
 
 export async function fetchTasks(): Promise<Task[]> {
-  const response = await fetch(`${process.env.BACKEND_URL}/tasks`, { next: { revalidate: 0 } });
+  const response = await fetch(`${process.env.BACKEND_URL}/tasks`);
   const { tasks } = await response.json();
   return tasks;
+}
+
+export async function getTask(taskId: number): Promise<Task> {
+  const response = await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`);
+  const { task } = await response.json();
+  return task;
 }
 
 export async function createTask(title: string, genre: TaskGenre, text: string): Promise<void> {
