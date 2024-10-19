@@ -1,26 +1,40 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { TaskGenre } from '@/lib/backend/types/task-genre';
 
-interface NewGenreFormProps {
-  handleCreateGenre: (formData: FormData) => Promise<{ success: boolean; error?: string }>;
+interface GenreFormProps {
+  initialGenre?: TaskGenre;
+  onSubmit: (genreName: string) => Promise<void>;
 }
 
-const NewGenreForm: React.FC<NewGenreFormProps> = ({ handleCreateGenre }) => {
-  const [genreName, setGenreName] = useState('');
-  const [error, setError] = useState<string | null>(null);
+const GenreForm: React.FC<GenreFormProps> = ({ initialGenre, onSubmit }) => {
   const router = useRouter();
+  const [genreName, setGenreName] = useState(initialGenre?.GenreName || '');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialGenre) {
+      setGenreName(initialGenre.GenreName);
+    }
+  }, [initialGenre]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    if (!genreName.trim()) {
+      setError('ジャンル名を入力してください');
+      return;
+    }
 
-    await handleCreateGenre(formData);
-    router.push('/admin/tasks');
+    try {
+      await onSubmit(genreName);
+      router.push('/admin/genres');
+    } catch (error) {
+      console.error('ジャンルの保存中にエラーが発生しました:', error);
+    }
   };
 
   return (
@@ -48,10 +62,10 @@ const NewGenreForm: React.FC<NewGenreFormProps> = ({ handleCreateGenre }) => {
         type="submit"
         className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
-        ジャンルを追加
+        {initialGenre ? '更新' : '追加'}
       </button>
     </form>
   );
 };
 
-export default NewGenreForm;
+export default GenreForm;

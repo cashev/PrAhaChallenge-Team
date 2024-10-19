@@ -5,7 +5,7 @@ import { TaskGenre } from '@/lib/backend/types/task-genre';
 import { revalidatePath } from 'next/cache';
 
 
-export default async function NewTaskPage() {
+const NewTaskPage: React.FC = async () => { 
   const genres = await fetchTaskGenres();
 
   async function handleCreateTask(title: string, genre: TaskGenre, text: string) {
@@ -24,4 +24,6 @@ export default async function NewTaskPage() {
       </div>
     </div>
   );
-}
+  }
+
+export default NewTaskPage;

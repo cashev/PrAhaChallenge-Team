@@ -3,7 +3,6 @@
 import React from "react";
 import { TaskGenre } from "@/lib/backend/types/task-genre";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface GenreRowProps {
   genre: TaskGenre;

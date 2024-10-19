@@ -1,28 +1,20 @@
 import { createTaskGenre } from '@/lib/backend/tasks';
-import NewGenreForm from './NewGenreForm';
+import GenreForm from '@/app/components/GenreForm';
+import { revalidatePath } from 'next/cache';
 
-export default function NewGenrePage() {
-  async function handleCreateGenre(formData: FormData) {
+const NewGenrePage: React.FC = () => {
+  async function handleCreateGenre(genreName: string) {
     'use server'
-
-    const genreName = formData.get('genreName') as string;
-    if (!genreName) {
-      return { success: false, error: 'Genre name is required' };
-    }
-
-    try {
-      await createTaskGenre(genreName);
-      return { success: true };
-    } catch (error) {
-      console.error('Failed to create genre:', error);
-      return { success: false, error: 'Failed to create genre' };
-    }
+    await createTaskGenre(genreName);
+    revalidatePath('/admin/genres');
   }
 
   return (
     <div className="max-w-md mx-auto mt-10">
       <h1 className="text-2xl font-bold mb-5">新規ジャンル追加</h1>
-      <NewGenreForm handleCreateGenre={handleCreateGenre} />
+      <GenreForm onSubmit={handleCreateGenre} />
     </div>
   );
 }
+
+export default NewGenrePage;

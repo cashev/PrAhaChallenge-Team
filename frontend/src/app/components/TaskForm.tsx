@@ -29,11 +29,15 @@ export default function TaskForm({ genres, initialTask, onSubmit }: TaskFormProp
     e.preventDefault();
     const genre = genres.find((g) => g.ID === parseInt(genreId));
     if (!title || !text || !genre) {
-      alert('All fields are required');
+      alert('全ての項目を入力してください');
       return;
     }
-    await onSubmit(title, genre, text);
-    router.push('/admin/tasks');
+    try {
+      await onSubmit(title, genre, text);
+      router.push('/admin/tasks');
+    } catch (error) {
+      console.error('課題の保存中にエラーが発生しました:', error);
+    }
   };
 
   return (
