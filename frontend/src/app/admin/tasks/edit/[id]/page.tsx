@@ -21,7 +21,7 @@ export default async function EditTaskPage({ params }: { params: { id: string } 
 
   return (
     <div className="max-w-2xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">課題の編集</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">課題の編集</h1>
       <TaskForm
         genres={genres}
         initialTask={task}

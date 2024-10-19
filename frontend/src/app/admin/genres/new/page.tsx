@@ -11,7 +11,7 @@ const NewGenrePage: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-5">新規ジャンル追加</h1>
+      <h1 className="text-2xl font-bold mb-5 text-gray-900 dark:text-white">新規ジャンル追加</h1>
       <GenreForm onSubmit={handleCreateGenre} />
     </div>
   );

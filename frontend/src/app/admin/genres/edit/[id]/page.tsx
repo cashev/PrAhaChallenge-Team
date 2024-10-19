@@ -17,7 +17,7 @@ export default async function EditGenrePage({ params }: { params: { id: string }
 
   return (
     <div className="max-w-2xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">ジャンルの編集</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">ジャンルの編集</h1>
       <GenreForm
         initialGenre={genre}
         onSubmit={handleUpdate}
