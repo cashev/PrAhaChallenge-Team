@@ -19,6 +19,9 @@ export default function AdminLayout({
                 <Link href="/admin/tasks" className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300">
                   課題一覧
                 </Link>
+                <Link href="/admin/genres" className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300">
+                  ジャンル一覧
+                </Link>
                 {/* 他のナビゲーション項目 */}
               </div>
             </div>
