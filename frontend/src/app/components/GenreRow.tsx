@@ -25,7 +25,7 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, onDelete }) => {
           <div className="flex-1 flex justify-center">
             <Link 
               href={`/admin/genres/edit/${genre.ID}`} 
-              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 px-4 py-2 rounded-md bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900 dark:hover:bg-indigo-800 transition-colors duration-200"
+              className="text-indigo-600 hover:text-indigo-900 dark:text-white dark:hover:text-indigo-200 px-4 py-2 rounded-md bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200"
             >
               編集
             </Link>
@@ -33,7 +33,7 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, onDelete }) => {
           <div className="flex-1 flex justify-center">
             <button
               onClick={handleDelete}
-              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 transition-colors duration-200"
+              className="text-red-600 hover:text-red-900 dark:text-white dark:hover:text-red-200 px-4 py-2 rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200"
             >
               削除
             </button>
