@@ -1,17 +1,14 @@
 import React from "react";
-import { getTaskGenre, updateTaskGenre } from '@/lib/backend/tasks';
+import { getGenre, updateGenre } from '@/lib/backend/genre';
 import GenreForm from '@/app/components/GenreForm';
 import { revalidatePath } from "next/cache";
 
 export default async function EditGenrePage({ params }: { params: { id: string } }) {
-  const genre = await getTaskGenre(parseInt(params.id));
+  const genre = await getGenre(parseInt(params.id));
 
-  const handleUpdate = async (genreName: string) => {
+  const handleUpdate = async (name: string, displayOrder: number) => {
     'use server';
-    await updateTaskGenre({
-      ID: genre.ID,
-      GenreName: genreName,
-    });
+    await updateGenre(genre.ID, name, displayOrder);
     revalidatePath('/admin/genres');
     revalidatePath('/admin/tasks');
   };

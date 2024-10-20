@@ -1,15 +1,15 @@
 import React from 'react';
 import TaskForm from '@/app/components/TaskForm';
-import { fetchTaskGenres, createTask } from '@/lib/backend/tasks';
-import { TaskGenre } from '@/lib/backend/types/task-genre';
+import { createTask } from '@/lib/backend/task';
+import { getGenres } from '@/lib/backend/genre';
 import { revalidatePath } from 'next/cache';
 
 const NewTaskPage: React.FC = async () => { 
-  const genres = await fetchTaskGenres();
+  const genres = await getGenres();
 
-  async function handleCreateTask(title: string, genre: TaskGenre, text: string) {
+  async function handleCreateTask(title: string, text: string, genreId: number, displayOrder: number) {
     'use server';
-    await createTask(title, genre, text);
+    await createTask(title, text, genreId, displayOrder);
     revalidatePath('/admin/tasks');
   }
 

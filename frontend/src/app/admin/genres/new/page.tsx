@@ -1,11 +1,11 @@
-import { createTaskGenre } from '@/lib/backend/tasks';
+import { createGenre } from '@/lib/backend/genre';
 import GenreForm from '@/app/components/GenreForm';
 import { revalidatePath } from 'next/cache';
 
 const NewGenrePage: React.FC = () => {
-  async function handleCreateGenre(genreName: string) {
+  async function handleCreateGenre(name: string, displayOrder: number) {
     'use server'
-    await createTaskGenre(genreName);
+    await createGenre(name, displayOrder);
     revalidatePath('/admin/genres');
   }
 

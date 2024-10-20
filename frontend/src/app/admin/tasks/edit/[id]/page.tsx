@@ -1,21 +1,22 @@
 import React from "react";
-import { getTask, updateTask, fetchTaskGenres } from '@/lib/backend/tasks';
+import { getTask, updateTask } from '@/lib/backend/task';
+import { getGenres } from '@/lib/backend/genre';
 import TaskForm from '@/app/components/TaskForm';
-import { TaskGenre } from "@/lib/backend/types/task-genre";
 import { revalidatePath } from "next/cache";
 
 export default async function EditTaskPage({ params }: { params: { id: string } }) {
   const task = await getTask(parseInt(params.id));
-  const genres = await fetchTaskGenres();
+  const genres = await getGenres();
 
-  const handleUpdate = async (title: string, genre: TaskGenre, text: string) => {
+  const handleUpdate = async (title: string, text: string, genreId: number, displayOrder: number) => {
     'use server';
-    await updateTask({
-      ID: task.ID,
-      Title: title,
-      TaskGenre: genre,
-      Text: text,
-    });
+    await updateTask(
+      task.ID,
+      title,
+      text,
+      genreId,
+      displayOrder
+    );
     revalidatePath('/admin/tasks');
   };
 

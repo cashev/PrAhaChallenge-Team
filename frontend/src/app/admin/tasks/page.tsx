@@ -1,10 +1,10 @@
 import React from "react";
-import { fetchTasks } from "@/lib/backend/tasks";
+import { getTasks } from "@/lib/backend/task";
 import Link from "next/link";
 import TaskTable from "@/app/components/TaskTable";
 
 const TasksPage: React.FC = async () => {
-  const tasks = await fetchTasks();
+  const tasks = await getTasks();
 
   return (
     <div className="max-w-4xl mx-auto py-8">

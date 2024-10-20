@@ -23,16 +23,16 @@ func setupRouter() *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/tasks", controller.GetTasks)
-	r.GET("/tasks/:id", controller.GetTask)
 	r.POST("/tasks", controller.CreateTask)
-	r.POST("/tasks/update/:id", controller.UpdateTask)
-	r.POST("/tasks/delete/:id", controller.DeleteTask)
+	r.GET("/tasks/:id", controller.GetTask)
+	r.PATCH("/tasks/:id", controller.UpdateTask)
+	r.DELETE("/tasks/:id", controller.DeleteTask)
 
-	r.GET("/task_genres", controller.GetTaskGenres)
-	r.GET("/task_genres/:id", controller.GetTaskGenre)
-	r.POST("/task_genres", controller.CreateTaskGenre)
-	r.POST("/task_genres/update/:id", controller.UpdateTaskGenre)
-	r.POST("/task_genres/delete/:id", controller.DeleteTaskGenre)
+	r.GET("/genres", controller.GetGenres)
+	r.POST("/genres", controller.CreateGenre)
+	r.GET("/genres/:id", controller.GetGenre)
+	r.PATCH("/genres/:id", controller.UpdateGenre)
+	r.DELETE("/genres/:id", controller.DeleteGenre)
 
 	return r
 }

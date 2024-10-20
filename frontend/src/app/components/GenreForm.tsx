@@ -2,21 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { TaskGenre } from '@/lib/backend/types/task-genre';
+import { Genre } from '@/lib/backend/types/genre';
 
 interface GenreFormProps {
-  initialGenre?: TaskGenre;
-  onSubmit: (genreName: string) => Promise<void>;
+  initialGenre?: Genre;
+  onSubmit: (name: string, displayOrder: number) => Promise<void>;
 }
 
 const GenreForm: React.FC<GenreFormProps> = ({ initialGenre, onSubmit }) => {
   const router = useRouter();
-  const [genreName, setGenreName] = useState(initialGenre?.GenreName || '');
+  const [genreName, setGenreName] = useState(initialGenre?.Name || '');
+  const [displayOrder, setDisplayOrder] = useState(initialGenre?.DisplayOrder || 0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialGenre) {
-      setGenreName(initialGenre.GenreName);
+      setGenreName(initialGenre.Name);
+      setDisplayOrder(initialGenre.DisplayOrder);
     }
   }, [initialGenre]);
 
@@ -28,9 +30,13 @@ const GenreForm: React.FC<GenreFormProps> = ({ initialGenre, onSubmit }) => {
       setError('ジャンル名を入力してください');
       return;
     }
+    if (isNaN(displayOrder) || displayOrder < 0) {
+      setError('表示順は0以上の整数で入力してください');
+      return;
+    }
 
     try {
-      await onSubmit(genreName);
+      await onSubmit(genreName, displayOrder);
       router.push('/admin/genres');
     } catch (error) {
       console.error('ジャンルの保存中にエラーが発生しました:', error);
@@ -54,6 +60,20 @@ const GenreForm: React.FC<GenreFormProps> = ({ initialGenre, onSubmit }) => {
           name="genreName"
           value={genreName}
           onChange={(e) => setGenreName(e.target.value)}
+          required
+          className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        />
+      </div>
+      <div>
+        <label htmlFor="displayOrder" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          表示順
+        </label>
+        <input
+          type="number"
+          id="displayOrder"
+          name="displayOrder"
+          value={displayOrder}
+          onChange={(e) => setDisplayOrder(parseInt(e.target.value))}
           required
           className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
         />

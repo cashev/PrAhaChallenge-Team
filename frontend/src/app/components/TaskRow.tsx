@@ -12,15 +12,16 @@ interface TaskRowProps {
 const TaskRow: React.FC<TaskRowProps> = ({ task, onDelete }) => {
   const handleOnDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (confirm("本当にこのタスクを削除しますか？")) {
+    if (confirm("本当にこの課題を削除しますか？")) {
       await onDelete(task.ID);
     }
   };
 
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{task.GenreDisplayOrder} - {task.DisplayOrder}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{task.Title}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{task.TaskGenre.GenreName}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{task.GenreName}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{task.Text}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <div className="flex items-center">

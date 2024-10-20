@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { TaskGenreWithReference } from "@/lib/backend/types/task-genre";
+import { GenreWithReference } from "@/lib/backend/types/genre";
 import Link from "next/link";
 
 interface GenreRowProps {
-  genre: TaskGenreWithReference;
+  genre: GenreWithReference;
   onDelete: (genreId: number) => Promise<void>;
 }
 
@@ -19,7 +19,8 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, onDelete }) => {
 
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 relative">
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{genre.GenreName}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{genre.DisplayOrder}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{genre.Name}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <div className="flex items-center">
           <div className="flex-1 flex justify-center">

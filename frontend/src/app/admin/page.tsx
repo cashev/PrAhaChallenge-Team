@@ -17,6 +17,11 @@ const AdminDashboard: React.FC = () => {
               <li className="py-4">
                 <Link href="/admin/tasks" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                   課題一覧
+                </Link>h
+              </li>
+              <li className="py-4">
+                <Link href="/admin/genres" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                  ジャンル一覧
                 </Link>
               </li>
               {/* 他の管理メニュー項目をここに追加 */}

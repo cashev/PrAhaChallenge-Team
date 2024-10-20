@@ -1,10 +1,10 @@
 import React from 'react';
-import { fetchTaskGenres } from '@/lib/backend/tasks';
+import { getGenres } from '@/lib/backend/genre';
 import GenreTable from '@/app/components/GenreTable';
 import Link from 'next/link';
 
 export default async function GenresPage() {
-  const genres = await fetchTaskGenres();
+  const genres = await getGenres();
 
   return (
     <div className="max-w-4xl mx-auto py-8">
