@@ -1,5 +1,5 @@
-import React from 'react';
-import Link from 'next/link';
+import Link from 'next/link'
+import React from 'react'
 
 export default function AdminLayout({
   children,
@@ -8,18 +8,27 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <nav className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+      <nav className="bg-white shadow-sm dark:bg-gray-800">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 justify-between">
             <div className="flex">
-              <Link href="/admin" className="text-gray-900 dark:text-white flex-shrink-0 flex items-center">
+              <Link
+                href="/admin"
+                className="flex shrink-0 items-center text-gray-900 dark:text-white"
+              >
                 管理者ダッシュボード
               </Link>
               <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
-                <Link href="/admin/tasks" className="text-gray-900 dark:text-gray-300 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-700">
+                <Link
+                  href="/admin/tasks"
+                  className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-gray-900 hover:border-gray-300 dark:text-gray-300 dark:hover:border-gray-700"
+                >
                   課題一覧
                 </Link>
-                <Link href="/admin/genres" className="text-gray-900 dark:text-gray-300 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-700">
+                <Link
+                  href="/admin/genres"
+                  className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-gray-900 hover:border-gray-300 dark:text-gray-300 dark:hover:border-gray-700"
+                >
                   ジャンル一覧
                 </Link>
                 {/* 他のナビゲーション項目 */}
@@ -33,10 +42,8 @@ export default function AdminLayout({
       </nav>
 
       <main className="py-10">
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-          {children}
-        </div>
+        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
-  );
+  )
 }

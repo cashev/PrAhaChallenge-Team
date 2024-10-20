@@ -1,40 +1,62 @@
-import { Task } from "@/lib/backend/types/task";
+import type { Task } from '@/lib/backend/types/task'
 
 export async function getTasks(): Promise<Task[]> {
-  const response = await fetch(`${process.env.BACKEND_URL}/tasks`);
-  const { tasks } = await response.json();
-  return tasks;
+  const response = await fetch(`${process.env.BACKEND_URL}/tasks`)
+  const { tasks } = await response.json()
+  return tasks
 }
 
 export async function getTask(taskId: number): Promise<Task> {
-  const response = await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, { next: { revalidate: 0 } });
-  const { task } = await response.json();
-  return task;
+  const response = await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, {
+    next: { revalidate: 0 },
+  })
+  const { task } = await response.json()
+  return task
 }
 
-export async function createTask(title: string, text: string, genreId: number, displayOrder: number): Promise<void> {
+export async function createTask(
+  title: string,
+  text: string,
+  genreId: number,
+  displayOrder: number,
+): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ Title: title, Text: text, GenreID: genreId, DisplayOrder: displayOrder }),
-  });
+    body: JSON.stringify({
+      Title: title,
+      Text: text,
+      GenreID: genreId,
+      DisplayOrder: displayOrder,
+    }),
+  })
 }
 
-export async function updateTask(taskId: number, title: string, text: string, genreId: number, displayOrder: number): Promise<void> {
+export async function updateTask(
+  taskId: number,
+  title: string,
+  text: string,
+  genreId: number,
+  displayOrder: number,
+): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ Title: title, Text: text, GenreID: genreId, DispalyOrder: displayOrder }),
-  });
+    body: JSON.stringify({
+      Title: title,
+      Text: text,
+      GenreID: genreId,
+      DispalyOrder: displayOrder,
+    }),
+  })
 }
 
 export async function deleteTask(taskId: number): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, {
-    method: "DELETE",
-  });
+    method: 'DELETE',
+  })
 }
-

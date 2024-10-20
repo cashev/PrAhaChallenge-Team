@@ -1,9 +1,9 @@
 export interface Genre {
-  ID: number;
-  Name: string;
-  DisplayOrder: number;
+  ID: number
+  Name: string
+  DisplayOrder: number
 }
 
 export interface GenreWithReference extends Genre {
-  IsReferenced: boolean;
+  IsReferenced: boolean
 }
