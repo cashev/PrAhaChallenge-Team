@@ -3,7 +3,7 @@ name: DB Migration
 on:
   push:
     branches:
-      - heroku # TODO: change to main
+      - main
 jobs:
   migration:
     runs-on: ubuntu-latest
