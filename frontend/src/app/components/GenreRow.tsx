@@ -35,17 +35,17 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, onDelete }) => {
               <button
                 onClick={handleDelete}
                 disabled={genre.IsReferenced}
-                className={`text-red-600 hover:text-red-900 dark:text-white dark:hover:text-red-200 px-4 py-2 rounded-md ${
+                className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                   genre.IsReferenced
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-red-100 hover:bg-red-200 dark:bg-red-700 dark:hover:bg-red-600"
-                } transition-colors duration-200`}
+                    ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-red-100 hover:bg-red-200 dark:bg-red-700 dark:hover:bg-red-600 text-red-600 hover:text-red-900 dark:text-white dark:hover:text-red-200"
+                }`}
               >
                 削除
               </button>
               {genre.IsReferenced && (
-                <div className="absolute z-10 bottom-full right-0 mb-2 px-3 py-1 bg-gray-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                  このジャンルは課題で使用されているため削除できません
+                <div className="absolute z-10 bottom-full right-0 mb-2 px-3 py-1 bg-gray-700 dark:bg-gray-200 text-white dark:text-gray-800 text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                  このジャンルは参照されているため削除できません
                 </div>
               )}
             </div>

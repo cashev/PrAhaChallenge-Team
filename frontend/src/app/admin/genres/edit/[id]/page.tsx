@@ -13,6 +13,7 @@ export default async function EditGenrePage({ params }: { params: { id: string }
       GenreName: genreName,
     });
     revalidatePath('/admin/genres');
+    revalidatePath('/admin/tasks');
   };
 
   return (

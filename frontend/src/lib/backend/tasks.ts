@@ -8,7 +8,7 @@ export async function fetchTasks(): Promise<Task[]> {
 }
 
 export async function getTask(taskId: number): Promise<Task> {
-  const response = await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`);
+  const response = await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, { next: { revalidate: 0 } });
   const { task } = await response.json();
   return task;
 }
@@ -46,7 +46,7 @@ export async function fetchTaskGenres(): Promise<TaskGenreWithReference[]> {
 }
 
 export async function getTaskGenre(genreId: number): Promise<TaskGenre> {
-  const response = await fetch(`${process.env.BACKEND_URL}/task_genres/${genreId}`);
+  const response = await fetch(`${process.env.BACKEND_URL}/task_genres/${genreId}`, { next: { revalidate: 0 } });
   const { taskGenre } = await response.json();
   return taskGenre;
 }
