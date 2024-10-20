@@ -1,11 +1,11 @@
 import React from "react";
-import { TaskGenre } from "@/lib/backend/types/task-genre";
+import { TaskGenreWithReference } from "@/lib/backend/types/task-genre";
 import GenreRow from "@/app/components/GenreRow";
 import { revalidatePath } from "next/cache";
 import { deleteTaskGenre } from "@/lib/backend/tasks";
 
 interface GenreTableProps {
-  genres: TaskGenre[];
+  genres: TaskGenreWithReference[];
 }
 
 const handleDeleteGenre = async (genreId: number) => {

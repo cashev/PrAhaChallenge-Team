@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { TaskGenre } from "@/lib/backend/types/task-genre";
+import { TaskGenreWithReference } from "@/lib/backend/types/task-genre";
 import Link from "next/link";
 
 interface GenreRowProps {
-  genre: TaskGenre;
+  genre: TaskGenreWithReference;
   onDelete: (genreId: number) => Promise<void>;
 }
 
@@ -18,7 +18,7 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, onDelete }) => {
   };
 
   return (
-    <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 relative">
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{genre.GenreName}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <div className="flex items-center">
@@ -31,12 +31,24 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, onDelete }) => {
             </Link>
           </div>
           <div className="flex-1 flex justify-center">
-            <button
-              onClick={handleDelete}
-              className="text-red-600 hover:text-red-900 dark:text-white dark:hover:text-red-200 px-4 py-2 rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-700 dark:hover:bg-red-600 transition-colors duration-200"
-            >
-              削除
-            </button>
+            <div className="relative group">
+              <button
+                onClick={handleDelete}
+                disabled={genre.IsReferenced}
+                className={`text-red-600 hover:text-red-900 dark:text-white dark:hover:text-red-200 px-4 py-2 rounded-md ${
+                  genre.IsReferenced
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-red-100 hover:bg-red-200 dark:bg-red-700 dark:hover:bg-red-600"
+                } transition-colors duration-200`}
+              >
+                削除
+              </button>
+              {genre.IsReferenced && (
+                <div className="absolute z-10 bottom-full right-0 mb-2 px-3 py-1 bg-gray-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                  このジャンルは課題で使用されているため削除できません
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </td>

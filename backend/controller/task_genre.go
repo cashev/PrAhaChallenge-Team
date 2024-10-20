@@ -9,6 +9,12 @@ import (
 	"github.com/cashev/PrAhaChallenge-Team/backend/models"
 )
 
+type TaskGenreResponse struct {
+	ID           uint   `json:"ID"`
+	GenreName    string `json:"GenreName"`
+	IsReferenced bool   `json:"IsReferenced"`
+}
+
 func GetTaskGenres(c *gin.Context) {
 	var taskGenres []models.TaskGenre
 
@@ -17,7 +23,19 @@ func GetTaskGenres(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"taskGenres": taskGenres})
+	var taskGenresResponse []TaskGenreResponse
+	for _, genre := range taskGenres {
+		var count int64
+		database.DB.Model(&models.Task{}).Where("task_genre_id = ?", genre.ID).Count(&count)
+		isReferenced := count > 0
+		taskGenresResponse = append(taskGenresResponse, TaskGenreResponse{
+			ID:           genre.ID,
+			GenreName:    genre.GenreName,
+			IsReferenced: isReferenced,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"taskGenres": taskGenresResponse})
 }
 
 func GetTaskGenre(c *gin.Context) {

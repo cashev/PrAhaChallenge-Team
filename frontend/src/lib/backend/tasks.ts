@@ -1,5 +1,5 @@
 import { Task,  } from "@/lib/backend/types/task";
-import { TaskGenre } from "@/lib/backend/types/task-genre";
+import { TaskGenre, TaskGenreWithReference } from "@/lib/backend/types/task-genre";
 
 export async function fetchTasks(): Promise<Task[]> {
   const response = await fetch(`${process.env.BACKEND_URL}/tasks`);
@@ -39,7 +39,7 @@ export async function deleteTask(taskId: number): Promise<void> {
   });
 }
 
-export async function fetchTaskGenres(): Promise<TaskGenre[]> {
+export async function fetchTaskGenres(): Promise<TaskGenreWithReference[]> {
   const response = await fetch(`${process.env.BACKEND_URL}/task_genres`, { next: { revalidate: 0 } });
   const { taskGenres } = await response.json();
   return taskGenres;
