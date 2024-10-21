@@ -5,7 +5,7 @@ data "external_schema" "gorm" {
     "-mod=mod",
     "ariga.io/atlas-provider-gorm",
     "load",
-    "--path", "./models",
+    "--path", "./database/models",
     "--dialect", "postgres", // | postgres | sqlite | sqlserver
   ]
 }
@@ -14,7 +14,7 @@ env "gorm" {
   src = data.external_schema.gorm.url
   dev = "docker://postgres/16/dev?search_path=public"
   migration {
-    dir = "file://migrations"
+    dir = "file://database/migrations"
   }
   format {
     migrate {

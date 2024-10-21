@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/cashev/PrAhaChallenge-Team/backend/database"
-	"github.com/cashev/PrAhaChallenge-Team/backend/models"
+	"github.com/cashev/PrAhaChallenge-Team/backend/database/models"
 )
 
 type TaskResponse struct {

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/cashev/PrAhaChallenge-Team/backend/database"
-	"github.com/cashev/PrAhaChallenge-Team/backend/models"
+	"github.com/cashev/PrAhaChallenge-Team/backend/database/models"
 )
 
 type GenreResponse struct {
