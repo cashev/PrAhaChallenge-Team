@@ -21,7 +21,6 @@ const AdminDashboard: React.FC = () => {
                 >
                   課題一覧
                 </Link>
-                h
               </li>
               <li className="py-4">
                 <Link
