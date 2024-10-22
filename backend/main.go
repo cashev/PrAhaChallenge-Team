@@ -34,6 +34,8 @@ func setupRouter() *gin.Engine {
 	r.PATCH("/genres/:id", controller.UpdateGenre)
 	r.DELETE("/genres/:id", controller.DeleteGenre)
 
+	r.GET("/task-publications", controller.GetTaskPublications)
+
 	return r
 }
 

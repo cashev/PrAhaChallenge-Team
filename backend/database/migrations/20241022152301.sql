@@ -108,6 +108,7 @@ CREATE TABLE "task_publications" (
   "genre_id" bigint NOT NULL,
   "season_id" bigint NOT NULL,
   "team_id" bigint NOT NULL,
+  "is_published" boolean NOT NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "fk_task_publications_genre" FOREIGN KEY ("genre_id") REFERENCES "genres" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT "fk_task_publications_season" FOREIGN KEY ("season_id") REFERENCES "seasons" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION,

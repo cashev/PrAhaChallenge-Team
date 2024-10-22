@@ -182,11 +182,12 @@ func createTaskPublications(db *gorm.DB) {
 			db.Where("name = ?", teamName).First(&team)
 
 			count := publicationCounts[teamName]
-			for i := 0; i < count && i < len(genres); i++ {
+			for i := 0; i < len(genres); i++ {
 				taskPublication := models.TaskPublication{
-					SeasonID: season.ID,
-					TeamID:   team.ID,
-					GenreID:  genres[i].ID,
+					SeasonID:    season.ID,
+					TeamID:      team.ID,
+					GenreID:     genres[i].ID,
+					IsPublished: i <= count-1,
 				}
 				db.Create(&taskPublication)
 			}
