@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "eslint --fix . && prettier --write ."
+    "format": "eslint --fix . && prettier --write .",
+    "prepare": "cd .. && husky frontend/.husky"
   },
   "dependencies": {
     "next": "14.2.14",
@@ -25,6 +26,7 @@
     "eslint-config-next": "14.2.14",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-tailwindcss": "^3.17.5",
+    "husky": "^9.1.6",
     "postcss": "^8",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^4.1.0",
