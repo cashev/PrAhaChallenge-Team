@@ -1,6 +1,7 @@
 import GenreForm from '@/app/components/GenreForm'
 import { createGenre } from '@/lib/backend/genre'
 import { revalidatePath } from 'next/cache'
+import React from 'react'
 
 const NewGenrePage: React.FC = () => {
   async function handleCreateGenre(name: string, displayOrder: number) {
