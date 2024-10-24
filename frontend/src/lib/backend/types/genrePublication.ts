@@ -1,4 +1,4 @@
-export interface TaskPublication {
+export interface GenrePublication {
   GenreID: number
   GenreName: string
   GenreDisplayOrder: number

@@ -1,4 +1,4 @@
-import { getTaskPublications } from '@/lib/backend/taskPublication'
+import { getGenrePublications } from '@/lib/backend/genrePublication'
 import React from 'react'
 
 interface Season {
@@ -7,7 +7,7 @@ interface Season {
 }
 
 const GenrePublicationPage = async () => {
-  const taskPublications = await getTaskPublications()
+  const taskPublications = await getGenrePublications()
 
   // ジャンル、シーズン、チームごとにデータを整理
   const organizedData: Record<

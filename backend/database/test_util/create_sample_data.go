@@ -26,7 +26,7 @@ func clearDatabase(db *gorm.DB) {
 		tx.Unscoped().Where("1 = 1").Delete(&models.TaskProgress{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.TeamStudent{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.GenreTask{})
-		tx.Unscoped().Where("1 = 1").Delete(&models.TaskPublication{})
+		tx.Unscoped().Where("1 = 1").Delete(&models.GenrePublication{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.SeasonTeam{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.Task{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.Genre{})
@@ -183,13 +183,13 @@ func createTaskPublications(db *gorm.DB) {
 
 			count := publicationCounts[teamName]
 			for i := 0; i < len(genres); i++ {
-				taskPublication := models.TaskPublication{
+				genrePublication := models.GenrePublication{
 					SeasonID:    season.ID,
 					TeamID:      team.ID,
 					GenreID:     genres[i].ID,
 					IsPublished: i <= count-1,
 				}
-				db.Create(&taskPublication)
+				db.Create(&genrePublication)
 			}
 		}
 	}
@@ -219,11 +219,11 @@ func createTaskProgresses(db *gorm.DB) {
 		db.Where("student_id = ?", student.ID).First(&teamStudent)
 
 		// チームに公開されたジャンルを取得
-		var taskPublications []models.TaskPublication
-		db.Where("team_id = ?", teamStudent.TeamID).Find(&taskPublications)
+		var genrePublications []models.GenrePublication
+		db.Where("team_id = ?", teamStudent.TeamID).Find(&genrePublications)
 
 		var availableTasks []models.Task
-		for _, publication := range taskPublications {
+		for _, publication := range genrePublications {
 			availableTasks = append(availableTasks, tasksByGenre[publication.GenreID]...)
 		}
 
