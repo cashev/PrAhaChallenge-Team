@@ -2,7 +2,7 @@
 
 import type { GenreWithReference } from '@/lib/backend/types/genre'
 import Link from 'next/link'
-import React from 'react'
+import type React from 'react'
 
 interface GenreRowProps {
   genre: GenreWithReference

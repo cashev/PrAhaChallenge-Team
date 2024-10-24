@@ -2,7 +2,8 @@
 
 import type { Genre } from '@/lib/backend/types/genre'
 import { useRouter } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import type React from 'react'
+import { useEffect, useState } from 'react'
 
 interface GenreFormProps {
   initialGenre?: Genre

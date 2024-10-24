@@ -1,7 +1,7 @@
 import { deleteTask } from '@/lib/backend/task'
 import type { Task } from '@/lib/backend/types/task'
 import { revalidatePath } from 'next/cache'
-import React from 'react'
+import type React from 'react'
 import TaskRow from './TaskRow'
 
 interface TaskTableProps {

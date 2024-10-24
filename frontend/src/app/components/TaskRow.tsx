@@ -2,7 +2,7 @@
 
 import type { Task } from '@/lib/backend/types/task'
 import Link from 'next/link'
-import React from 'react'
+import type React from 'react'
 
 interface TaskRowProps {
   task: Task

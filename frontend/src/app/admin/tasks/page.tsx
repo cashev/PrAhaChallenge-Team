@@ -1,7 +1,7 @@
 import TaskTable from '@/app/components/TaskTable'
 import { getTasks } from '@/lib/backend/task'
 import Link from 'next/link'
-import React from 'react'
+import type React from 'react'
 
 const TasksPage: React.FC = async () => {
   const tasks = await getTasks()

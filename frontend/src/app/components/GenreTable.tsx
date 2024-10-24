@@ -2,7 +2,7 @@ import GenreRow from '@/app/components/GenreRow'
 import { deleteGenre } from '@/lib/backend/genre'
 import type { GenreWithReference } from '@/lib/backend/types/genre'
 import { revalidatePath } from 'next/cache'
-import React from 'react'
+import type React from 'react'
 
 interface GenreTableProps {
   genres: GenreWithReference[]

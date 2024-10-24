@@ -2,7 +2,7 @@ import TaskForm from '@/app/components/TaskForm'
 import { getGenres } from '@/lib/backend/genre'
 import { createTask } from '@/lib/backend/task'
 import { revalidatePath } from 'next/cache'
-import React from 'react'
+import type React from 'react'
 
 const NewTaskPage: React.FC = async () => {
   const genres = await getGenres()
