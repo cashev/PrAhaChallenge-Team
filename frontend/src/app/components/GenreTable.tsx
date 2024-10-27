@@ -1,20 +1,16 @@
 import GenreRow from '@/app/components/GenreRow'
-import { deleteGenre } from '@/lib/backend/genre'
 import type { GenreWithReference } from '@/lib/backend/types/genre'
-import { revalidatePath } from 'next/cache'
 import type React from 'react'
 
 interface GenreTableProps {
   genres: GenreWithReference[]
+  handleDeleteGenre: (genreId: number) => Promise<void>
 }
 
-const handleDeleteGenre = async (genreId: number) => {
-  'use server'
-  await deleteGenre(genreId)
-  revalidatePath('/admin/genres')
-}
-
-const GenreTable: React.FC<GenreTableProps> = ({ genres }) => {
+const GenreTable: React.FC<GenreTableProps> = ({
+  genres,
+  handleDeleteGenre,
+}) => {
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-4xl">

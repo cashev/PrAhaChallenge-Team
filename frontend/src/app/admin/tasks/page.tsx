@@ -1,7 +1,14 @@
 import TaskTable from '@/app/components/TaskTable'
-import { getTasks } from '@/lib/backend/task'
+import { deleteTask, getTasks } from '@/lib/backend/task'
+import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 import type React from 'react'
+
+const handleDeleteTask = async (taskId: number) => {
+  'use server'
+  await deleteTask(taskId)
+  revalidatePath('/admin/tasks', 'page')
+}
 
 const TasksPage: React.FC = async () => {
   const tasks = await getTasks()
@@ -19,7 +26,7 @@ const TasksPage: React.FC = async () => {
           新規課題作成
         </Link>
       </div>
-      <TaskTable tasks={tasks} />
+      <TaskTable tasks={tasks} handleDeleteTask={handleDeleteTask} />
     </div>
   )
 }

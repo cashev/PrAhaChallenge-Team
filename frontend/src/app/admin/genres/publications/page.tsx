@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache'
 const saveGenrePublications = async (data: UpdateGenrePublicationRequest[]) => {
   'use server'
   await updatePublicationStatus(data)
-  revalidatePath('/admin/genres/publications')
+  revalidatePath('/admin', 'page')
 }
 
 const GenrePublicationPage = async () => {

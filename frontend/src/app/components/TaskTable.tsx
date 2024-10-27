@@ -1,20 +1,13 @@
-import { deleteTask } from '@/lib/backend/task'
 import type { Task } from '@/lib/backend/types/task'
-import { revalidatePath } from 'next/cache'
 import type React from 'react'
 import TaskRow from './TaskRow'
 
 interface TaskTableProps {
   tasks: Task[]
+  handleDeleteTask: (taskId: number) => Promise<void>
 }
 
-const handleDeleteTask = async (taskId: number) => {
-  'use server'
-  await deleteTask(taskId)
-  revalidatePath('/admin/tasks')
-}
-
-const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
+const TaskTable: React.FC<TaskTableProps> = ({ tasks, handleDeleteTask }) => {
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-4xl">

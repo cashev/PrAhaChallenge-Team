@@ -1,6 +1,14 @@
 import GenreTable from '@/app/components/GenreTable'
-import { getGenres } from '@/lib/backend/genre'
+import { deleteGenre, getGenres } from '@/lib/backend/genre'
+import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
+
+const handleDeleteGenre = async (genreId: number) => {
+  'use server'
+  await deleteGenre(genreId)
+  revalidatePath('/admin/genres')
+  revalidatePath('/admin/genres/publications')
+}
 
 export default async function GenresPage() {
   const genres = await getGenres()
@@ -26,7 +34,7 @@ export default async function GenresPage() {
           </Link>
         </div>
       </div>
-      <GenreTable genres={genres} />
+      <GenreTable genres={genres} handleDeleteGenre={handleDeleteGenre} />
     </div>
   )
 }

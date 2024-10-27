@@ -8,6 +8,7 @@ const NewGenrePage: React.FC = () => {
     'use server'
     await createGenre(name, displayOrder)
     revalidatePath('/admin/genres')
+    revalidatePath('/admin/genres/publications')
   }
 
   return (
