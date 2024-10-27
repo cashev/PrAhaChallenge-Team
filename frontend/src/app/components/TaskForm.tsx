@@ -30,9 +30,6 @@ export default function TaskForm({
     initialTask?.DisplayOrder || 0,
   )
 
-  console.log('initialTask: ', initialTask)
-  console.log('genreId: ', genreId)
-
   useEffect(() => {
     if (initialTask) {
       setTitle(initialTask.Title)

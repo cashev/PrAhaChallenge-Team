@@ -1,7 +1,9 @@
 import type { Genre, GenreWithReference } from './types/genre'
 
 export async function getGenres(): Promise<GenreWithReference[]> {
-  const response = await fetch(`${process.env.BACKEND_URL}/genres`)
+  const response = await fetch(`${process.env.BACKEND_URL}/genres`, {
+    next: { revalidate: 0 },
+  })
   const { genres } = await response.json()
   return genres
 }
