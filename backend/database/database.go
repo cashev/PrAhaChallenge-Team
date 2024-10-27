@@ -22,6 +22,9 @@ func Connect() {
 		panic("データベース接続情報の解析に失敗しました: " + err.Error())
 	}
 	sslmode := os.Getenv("DATABASE_SSLMODE")
+	if sslmode == "" {
+		sslmode = "disable"
+	}
 	dsn := fmt.Sprintf("%s sslmode=%s TimeZone=Asia/Tokyo", connection, sslmode)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

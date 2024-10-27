@@ -11,7 +11,7 @@ import (
 func main() {
 	setupDatabase()
 	r := setupRouter()
-	port := os.Getenv("PORT")
+	port := getPort()
 	r.Run(":" + port)
 }
 
@@ -29,4 +29,12 @@ func setupRouter() *gin.Engine {
 	r.POST("/task_genres", controller.CreateTaskGenre)
 
 	return r
+}
+
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	return port
 }

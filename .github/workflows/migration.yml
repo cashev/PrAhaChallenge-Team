@@ -1,0 +1,23 @@
+name: DB Migration
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    environment: heroku
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Atlas
+        run: |
+          curl -sSf https://atlasgo.sh | sh 
+      - name: Run migration
+        run: |
+          atlas migrate apply --env gorm --url "${{ secrets.DATABASE_URL }}?search_path=public&sslmode=require"
+    
