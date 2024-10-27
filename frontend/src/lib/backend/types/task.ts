@@ -1,8 +1,9 @@
-import { TaskGenre } from "./task-genre";
-
 export interface Task {
-  ID: number;
-  Title: string;
-  TaskGenre: TaskGenre;
-  Text: string;
+  ID: number
+  Title: string
+  GenreID: number
+  GenreName: string
+  GenreDisplayOrder: number
+  Text: string
+  DisplayOrder: number
 }

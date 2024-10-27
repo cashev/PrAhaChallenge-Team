@@ -1,27 +1,27 @@
-import React from "react";
-import { getTaskGenre, updateTaskGenre } from '@/lib/backend/tasks';
-import GenreForm from '@/app/components/GenreForm';
-import { revalidatePath } from "next/cache";
+import GenreForm from '@/app/components/GenreForm'
+import { getGenre, updateGenre } from '@/lib/backend/genre'
+import { revalidatePath } from 'next/cache'
 
-export default async function EditGenrePage({ params }: { params: { id: string } }) {
-  const genre = await getTaskGenre(parseInt(params.id));
+export default async function EditGenrePage({
+  params,
+}: {
+  params: { id: string }
+}) {
+  const genre = await getGenre(parseInt(params.id))
 
-  const handleUpdate = async (genreName: string) => {
-    'use server';
-    await updateTaskGenre({
-      ID: genre.ID,
-      GenreName: genreName,
-    });
-    revalidatePath('/admin/genres');
-  };
+  const handleUpdate = async (name: string, displayOrder: number) => {
+    'use server'
+    await updateGenre(genre.ID, name, displayOrder)
+    revalidatePath('/admin/genres', 'page')
+    revalidatePath('/admin/genres/publications', 'page')
+  }
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">ジャンルの編集</h1>
-      <GenreForm
-        initialGenre={genre}
-        onSubmit={handleUpdate}
-      />
+    <div className="mx-auto max-w-2xl py-8">
+      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
+        ジャンルの編集
+      </h1>
+      <GenreForm initialGenre={genre} onSubmit={handleUpdate} />
     </div>
-  );
+  )
 }

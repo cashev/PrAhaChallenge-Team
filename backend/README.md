@@ -20,5 +20,5 @@ make migrate
 migrationファイルを作成する
 
 ```sh
-atlas migrate diff --env gorm
+make migrate-diff
 ```

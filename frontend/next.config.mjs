@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   env: {
-    BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:8080'
-  }
-};
+    BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:8080',
+  },
+}
 
-export default nextConfig;
+export default nextConfig
