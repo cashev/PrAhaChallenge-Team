@@ -69,16 +69,50 @@ func CreateGenre(c *gin.Context) {
 		return
 	}
 
+	// トランザクションを開始
+	tx := database.DB.Begin()
+
 	genre := models.Genre{
 		Name:         request.Name,
 		DisplayOrder: request.DisplayOrder,
 	}
-	if err := database.DB.Create(&genre).Error; err != nil {
+	if err := tx.Create(&genre).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "ジャンルが正常に作成されました"})
+	// SeasonTeamテーブルから全ての有効な組み合わせを取得
+	var seasonTeams []models.SeasonTeam
+	if err := tx.Find(&seasonTeams).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "SeasonTeamの取得に失敗しました"})
+		return
+	}
+
+	// 各SeasonTeamに対してGenrePublicationを作成
+	for _, seasonTeam := range seasonTeams {
+		genrePublication := models.GenrePublication{
+			GenreID:     genre.ID,
+			SeasonID:    seasonTeam.SeasonID,
+			TeamID:      seasonTeam.TeamID,
+			IsPublished: false, // デフォルトでは非公開
+		}
+		if err := tx.Create(&genrePublication).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "GenrePublicationの作成に失敗しました"})
+			return
+		}
+	}
+
+	// トランザクションをコミット
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "トランザクションのコミットに失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ジャンルとGenrePublicationが正常に作成されました"})
 }
 
 func UpdateGenre(c *gin.Context) {
@@ -108,27 +142,49 @@ func UpdateGenre(c *gin.Context) {
 func DeleteGenre(c *gin.Context) {
 	id := c.Param("id")
 
+	// トランザクションを開始
+	tx := database.DB.Begin()
+
 	var genre models.Genre
-	if err := database.DB.First(&genre, id).Error; err != nil {
+	if err := tx.First(&genre, id).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusNotFound, gin.H{"error": "ジャンルが見つかりません"})
 		return
 	}
 
 	// GenreTaskテーブルでの参照をチェック
 	var count int64
-	if err := database.DB.Model(&models.GenreTask{}).Where("genre_id = ?", id).Count(&count).Error; err != nil {
+	if err := tx.Model(&models.GenreTask{}).Where("genre_id = ?", id).Count(&count).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "データベースエラーが発生しました"})
 		return
 	}
 	if count > 0 {
+		tx.Rollback()
 		c.JSON(http.StatusBadRequest, gin.H{"error": "このジャンルは課題で使用されているため削除できません"})
 		return
 	}
 
-	if err := database.DB.Delete(&genre).Error; err != nil {
+	// GenrePublicationを削除
+	if err := tx.Where("genre_id = ?", id).Delete(&models.GenrePublication{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "GenrePublicationの削除中にエラーが発生しました"})
+		return
+	}
+
+	// ジャンルを削除
+	if err := tx.Delete(&genre).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ジャンルの削除中にエラーが発生しました"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "ジャンルが正常に削除されました"})
+	// トランザクションをコミット
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "トランザクションのコミットに失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ジャンルとGenrePublicationが正常に削除されました"})
 }

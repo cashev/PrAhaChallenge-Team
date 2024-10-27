@@ -10,7 +10,7 @@ export async function getGenrePublications(): Promise<GetGenrePublicationRespons
 }
 
 export async function updatePublicationStatus(
-  genrePublications: UpdateGenrePublicationRequest,
+  genrePublications: UpdateGenrePublicationRequest[],
 ): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/genre-publications`, {
     method: 'PATCH',
