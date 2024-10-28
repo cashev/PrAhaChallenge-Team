@@ -180,3 +180,31 @@ func DeleteTask(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "タスクが正常に削除されました"})
 }
+
+type TaskOrderRequest struct {
+	TaskID   uint `json:"TaskID" binding:"required"`
+	NewOrder int  `json:"NewOrder" binding:"required"`
+}
+
+func UpdateTaskOrders(c *gin.Context) {
+	var request []TaskOrderRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := database.DB.Begin()
+	for _, req := range request {
+		// DisplayOrderのみを更新
+		if err := tx.Model(&models.Task{}).
+			Where("id = ?", req.TaskID).
+			Update("display_order", req.NewOrder).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{"message": "タスクの順番が正常に更新されました"})
+}
