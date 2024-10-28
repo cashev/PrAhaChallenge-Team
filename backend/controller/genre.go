@@ -188,3 +188,35 @@ func DeleteGenre(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "ジャンルとGenrePublicationが正常に削除されました"})
 }
+
+type GenreOrderRequest struct {
+	GenreID  uint `json:"GenreID" binding:"required"`
+	NewOrder int  `json:"NewOrder" binding:"required"`
+}
+
+func UpdateGenreOrders(c *gin.Context) {
+	var request []GenreOrderRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := database.DB.Begin()
+	for _, req := range request {
+		if err := tx.Model(&models.Genre{}).
+			Where("id = ?", req.GenreID).
+			Update("display_order", req.NewOrder).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "トランザクションのコミットに失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ジャンルの表示順が正常に更新されました"})
+}
