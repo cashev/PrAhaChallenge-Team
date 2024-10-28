@@ -18,7 +18,6 @@ export async function createTask(
   title: string,
   text: string,
   genreId: number,
-  displayOrder: number,
 ): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks`, {
     method: 'POST',
@@ -29,7 +28,6 @@ export async function createTask(
       Title: title,
       Text: text,
       GenreID: genreId,
-      DisplayOrder: displayOrder,
     }),
   })
 }
@@ -39,7 +37,6 @@ export async function updateTask(
   title: string,
   text: string,
   genreId: number,
-  displayOrder: number,
 ): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, {
     method: 'PATCH',
@@ -50,7 +47,6 @@ export async function updateTask(
       Title: title,
       Text: text,
       GenreID: genreId,
-      DispalyOrder: displayOrder,
     }),
   })
 }

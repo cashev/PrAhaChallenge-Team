@@ -41,9 +41,6 @@ const GenreRow: React.FC<GenreRowProps> = ({
       className="hover:bg-gray-50 dark:hover:bg-gray-700"
     >
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-        {genre.DisplayOrder}
-      </td>
-      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
         {genre.Name}
       </td>
       <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">

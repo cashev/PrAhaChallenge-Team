@@ -46,12 +46,23 @@ const GenreEditor: React.FC<GenreEditorProps> = ({
         </h1>
         <div className="flex gap-4">
           {isReordering ? (
-            <button
-              onClick={saveNewOrder}
-              className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-            >
-              保存
-            </button>
+            <>
+              <button
+                onClick={saveNewOrder}
+                className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+              >
+                保存
+              </button>
+              <button
+                onClick={() => {
+                  setIsReordering(false)
+                  setGenres(initialGenres) // 元の順序に戻す
+                }}
+                className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+              >
+                キャンセル
+              </button>
+            </>
           ) : (
             <>
               <button

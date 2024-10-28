@@ -11,10 +11,9 @@ const NewTaskPage: React.FC = async () => {
     title: string,
     text: string,
     genreId: number,
-    displayOrder: number,
   ) {
     'use server'
-    await createTask(title, text, genreId, displayOrder)
+    await createTask(title, text, genreId)
     revalidatePath('/admin/tasks')
   }
 

@@ -16,30 +16,26 @@ export async function getGenre(genreId: number): Promise<Genre> {
   return genre
 }
 
-export async function createGenre(
-  genreName: string,
-  displayOrder: number,
-): Promise<void> {
+export async function createGenre(genreName: string): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/genres`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ Name: genreName, DisplayOrder: displayOrder }),
+    body: JSON.stringify({ Name: genreName }),
   })
 }
 
 export async function updateGenre(
   genreId: number,
   genreName: string,
-  displayOrder: number,
 ): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/genres/${genreId}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ Name: genreName, DisplayOrder: displayOrder }),
+    body: JSON.stringify({ Name: genreName }),
   })
 }
 

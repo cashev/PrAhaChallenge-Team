@@ -37,9 +37,6 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, onDelete, isReordering }) => {
       className="hover:bg-gray-50 dark:hover:bg-gray-700"
     >
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-        {task.GenreDisplayOrder} - {task.DisplayOrder}
-      </td>
-      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
         {task.Title}
       </td>
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
