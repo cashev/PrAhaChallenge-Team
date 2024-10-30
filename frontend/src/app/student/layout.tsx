@@ -1,3 +1,6 @@
+'use client'
+
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import type React from 'react'
 import LogoutButton from '../components/LogoutButton'
@@ -7,6 +10,8 @@ export default function StudentLayout({
 }: {
   children: React.ReactNode
 }) {
+  const { data: session } = useSession()
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <nav className="bg-white shadow-sm dark:bg-gray-800">
@@ -29,7 +34,7 @@ export default function StudentLayout({
               </div>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
-              <LogoutButton />
+              {session?.user && <LogoutButton />}
             </div>
           </div>
         </div>
