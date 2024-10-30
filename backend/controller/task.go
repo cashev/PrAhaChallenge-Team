@@ -180,3 +180,90 @@ func DeleteTask(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "タスクが正常に削除されました"})
 }
+
+type TaskByStudentResponse struct {
+	ID                uint   `json:"ID"`
+	Title             string `json:"Title"`
+	GenreID           uint   `json:"GenreID"`
+	GenreName         string `json:"GenreName"`
+	GenreDisplayOrder int    `json:"GenreDisplayOrder"`
+	DisplayOrder      int    `json:"DisplayOrder"`
+	Text              string `json:"Text"`
+}
+
+func GetTasksByStudent(c *gin.Context) {
+	studentID, exists := c.Get("studentID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "学生IDが見つかりません"})
+		return
+	}
+
+	// 学生のチーム情報とシーズン情報を取得
+	var teamStudent models.TeamStudent
+	if err := database.DB.
+		Preload("Team.SeasonTeams.Season.SeasonTeams").
+		Where("student_id = ?", studentID).
+		First(&teamStudent).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "チーム情報が見つかりません"})
+		return
+	}
+
+	if len(teamStudent.Team.SeasonTeams) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "シーズン情報が見つかりません"})
+		return
+	}
+
+	teamIDs := []uint{}
+	for _, st := range teamStudent.Team.SeasonTeams[0].Season.SeasonTeams {
+		teamIDs = append(teamIDs, st.TeamID)
+	}
+
+	type TaskInfo struct {
+		TaskID            uint
+		TaskTitle         string
+		TaskText          string
+		TaskDisplayOrder  int
+		GenreID           uint
+		GenreName         string
+		GenreDisplayOrder int
+		TeamID            uint
+		IsPublished       bool
+	}
+
+	var taskInfos []TaskInfo
+	if err := database.DB.Table("tasks").
+		Distinct("tasks.id as task_id, tasks.title as task_title, tasks.text as task_text, "+
+			"tasks.display_order as task_display_order, "+
+			"genres.id as genre_id, genres.name as genre_name, genres.display_order as genre_display_order, "+
+			"gp1.team_id, gp1.is_published").
+		Joins("JOIN genre_tasks ON tasks.id = genre_tasks.task_id").
+		Joins("JOIN genres ON genre_tasks.genre_id = genres.id").
+		Joins("JOIN genre_publications gp1 ON genres.id = gp1.genre_id").
+		Joins("JOIN genre_publications gp2 ON genres.id = gp2.genre_id").
+		Where("gp1.team_id = ?", teamStudent.TeamID).
+		Where("gp2.team_id IN ? AND gp2.is_published = ?", teamIDs, true).
+		Order("genres.display_order, tasks.display_order").
+		Find(&taskInfos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "課題情報の取得に失敗しました"})
+		return
+	}
+
+	// レスポンスの構築
+	tasks := []TaskByStudentResponse{}
+	for _, info := range taskInfos {
+		task := TaskByStudentResponse{
+			ID:                info.TaskID,
+			Title:             info.TaskTitle,
+			GenreID:           info.GenreID,
+			GenreName:         info.GenreName,
+			GenreDisplayOrder: info.GenreDisplayOrder,
+			DisplayOrder:      info.TaskDisplayOrder,
+		}
+		if info.TeamID == teamStudent.TeamID && info.IsPublished {
+			task.Text = info.TaskText
+		}
+		tasks = append(tasks, task)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"tasks": tasks})
+}

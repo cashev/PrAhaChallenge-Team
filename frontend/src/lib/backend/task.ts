@@ -1,4 +1,4 @@
-import type { Task } from '@/lib/backend/types/task'
+import type { Task, TaskByStudentResponse } from '@/lib/backend/types/task'
 
 export async function getTasks(): Promise<Task[]> {
   const response = await fetch(`${process.env.BACKEND_URL}/tasks`)
@@ -59,4 +59,16 @@ export async function deleteTask(taskId: number): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, {
     method: 'DELETE',
   })
+}
+
+export async function getTasksByStudent(
+  token: string,
+): Promise<TaskByStudentResponse[]> {
+  const response = await fetch(`${process.env.BACKEND_URL}/student/tasks`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  const { tasks } = await response.json()
+  return tasks
 }

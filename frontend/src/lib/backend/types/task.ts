@@ -7,3 +7,13 @@ export interface Task {
   Text: string
   DisplayOrder: number
 }
+
+export interface TaskByStudentResponse {
+  ID: number
+  Title: string
+  GenreID: number
+  GenreName: string
+  GenreDisplayOrder: number
+  DisplayOrder: number
+  Text: string
+}
