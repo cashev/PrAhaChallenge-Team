@@ -20,6 +20,12 @@ export default function AdminLayout({
               </Link>
               <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
                 <Link
+                  href="/admin/students"
+                  className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-gray-900 hover:border-gray-300 dark:text-gray-300 dark:hover:border-gray-700"
+                >
+                  受講生一覧
+                </Link>
+                <Link
                   href="/admin/tasks"
                   className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-gray-900 hover:border-gray-300 dark:text-gray-300 dark:hover:border-gray-700"
                 >

@@ -16,6 +16,14 @@ const AdminDashboard: React.FC = () => {
             <ul className="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
               <li className="py-4">
                 <Link
+                  href="/admin/students"
+                  className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  受講生一覧
+                </Link>
+              </li>
+              <li className="py-4">
+                <Link
                   href="/admin/tasks"
                   className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
