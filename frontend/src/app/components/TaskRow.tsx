@@ -13,12 +13,19 @@ interface TaskRowProps {
 }
 
 const TaskRow: React.FC<TaskRowProps> = ({ task, onDelete, isReordering }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: task.ID })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.ID })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    cursor: isReordering ? (isDragging ? 'grabbing' : 'grab') : 'default',
   }
 
   const handleOnDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,7 +41,7 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, onDelete, isReordering }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className="hover:bg-gray-50 dark:hover:bg-gray-700"
+      className={isReordering ? 'hover:bg-gray-50 dark:hover:bg-gray-700' : ''}
     >
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
         {task.Title}

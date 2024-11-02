@@ -17,12 +17,19 @@ const GenreRow: React.FC<GenreRowProps> = ({
   onDelete,
   isReordering,
 }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: genre.ID })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: genre.ID })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    cursor: isReordering ? (isDragging ? 'grabbing' : 'grab') : 'default',
   }
 
   const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -38,7 +45,7 @@ const GenreRow: React.FC<GenreRowProps> = ({
       style={style}
       {...attributes}
       {...listeners}
-      className="hover:bg-gray-50 dark:hover:bg-gray-700"
+      className={isReordering ? 'hover:bg-gray-50 dark:hover:bg-gray-700' : ''}
     >
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
         {genre.Name}
