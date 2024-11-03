@@ -8,6 +8,11 @@ export interface Task {
   DisplayOrder: number
 }
 
+export interface TaskOrder {
+  TaskID: number
+  NewOrder: number
+}
+
 export interface TaskByStudentResponse {
   ID: number
   Title: string

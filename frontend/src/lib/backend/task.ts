@@ -1,4 +1,8 @@
-import type { Task, TaskByStudentResponse } from '@/lib/backend/types/task'
+import type {
+  Task,
+  TaskByStudentResponse,
+  TaskOrder,
+} from '@/lib/backend/types/task'
 
 export async function getTasks(): Promise<Task[]> {
   const response = await fetch(`${process.env.BACKEND_URL}/tasks`)
@@ -18,7 +22,6 @@ export async function createTask(
   title: string,
   text: string,
   genreId: number,
-  displayOrder: number,
 ): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks`, {
     method: 'POST',
@@ -29,7 +32,6 @@ export async function createTask(
       Title: title,
       Text: text,
       GenreID: genreId,
-      DisplayOrder: displayOrder,
     }),
   })
 }
@@ -39,7 +41,6 @@ export async function updateTask(
   title: string,
   text: string,
   genreId: number,
-  displayOrder: number,
 ): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, {
     method: 'PATCH',
@@ -50,7 +51,6 @@ export async function updateTask(
       Title: title,
       Text: text,
       GenreID: genreId,
-      DispalyOrder: displayOrder,
     }),
   })
 }
@@ -58,6 +58,14 @@ export async function updateTask(
 export async function deleteTask(taskId: number): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/tasks/${taskId}`, {
     method: 'DELETE',
+  })
+}
+
+export async function updateTaskOrders(taskOrders: TaskOrder[]): Promise<void> {
+  await fetch(`${process.env.BACKEND_URL}/tasks/order`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(taskOrders),
   })
 }
 

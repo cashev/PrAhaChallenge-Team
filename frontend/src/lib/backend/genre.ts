@@ -1,4 +1,4 @@
-import type { Genre, GenreWithReference } from './types/genre'
+import type { Genre, GenreOrder, GenreWithReference } from './types/genre'
 
 export async function getGenres(): Promise<GenreWithReference[]> {
   const response = await fetch(`${process.env.BACKEND_URL}/genres`, {
@@ -16,35 +16,43 @@ export async function getGenre(genreId: number): Promise<Genre> {
   return genre
 }
 
-export async function createGenre(
-  genreName: string,
-  displayOrder: number,
-): Promise<void> {
+export async function createGenre(genreName: string): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/genres`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ Name: genreName, DisplayOrder: displayOrder }),
+    body: JSON.stringify({ Name: genreName }),
   })
 }
 
 export async function updateGenre(
   genreId: number,
   genreName: string,
-  displayOrder: number,
 ): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/genres/${genreId}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ Name: genreName, DisplayOrder: displayOrder }),
+    body: JSON.stringify({ Name: genreName }),
   })
 }
 
 export async function deleteGenre(genreId: number): Promise<void> {
   await fetch(`${process.env.BACKEND_URL}/genres/${genreId}`, {
     method: 'DELETE',
+  })
+}
+
+export async function updateGenreOrders(
+  genreOrders: GenreOrder[],
+): Promise<void> {
+  await fetch(`${process.env.BACKEND_URL}/genres/order`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(genreOrders),
   })
 }

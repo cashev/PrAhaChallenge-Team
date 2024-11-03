@@ -126,7 +126,13 @@ const GenrePublicationTable: React.FC<GenrePublicationTableProps> = ({
                               cursor: isEditing ? 'pointer' : 'default',
                             }}
                           >
-                            {publication ? '✅' : '❌'}
+                            <input
+                              type="checkbox"
+                              checked={publication}
+                              onChange={() => {}} // React の制御付きコンポーネントの警告を防ぐため
+                              disabled={!isEditing}
+                              className="size-4 cursor-pointer"
+                            />
                           </td>
                         )
                       })}

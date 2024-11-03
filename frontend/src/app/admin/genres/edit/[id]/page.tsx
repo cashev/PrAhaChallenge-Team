@@ -9,9 +9,9 @@ export default async function EditGenrePage({
 }) {
   const genre = await getGenre(parseInt(params.id))
 
-  const handleUpdate = async (name: string, displayOrder: number) => {
+  const handleUpdate = async (name: string) => {
     'use server'
-    await updateGenre(genre.ID, name, displayOrder)
+    await updateGenre(genre.ID, name)
     revalidatePath('/admin/genres', 'page')
     revalidatePath('/admin/genres/publications', 'page')
   }
