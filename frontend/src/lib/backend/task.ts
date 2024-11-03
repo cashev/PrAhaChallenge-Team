@@ -1,6 +1,6 @@
 import type {
   Task,
-  TaskByStudentResponse,
+  TaskAndProgressResponse,
   TaskOrder,
 } from '@/lib/backend/types/task'
 
@@ -71,12 +71,12 @@ export async function updateTaskOrders(taskOrders: TaskOrder[]): Promise<void> {
 
 export async function getTasksByStudent(
   token: string,
-): Promise<TaskByStudentResponse[]> {
+): Promise<TaskAndProgressResponse> {
   const response = await fetch(`${process.env.BACKEND_URL}/student/tasks`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   })
-  const { tasks } = await response.json()
-  return tasks
+  const { tasks, teams } = await response.json()
+  return { tasks, teams }
 }

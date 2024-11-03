@@ -13,7 +13,12 @@ export interface TaskOrder {
   NewOrder: number
 }
 
-export interface TaskByStudentResponse {
+export interface TaskAndProgressResponse {
+  tasks: TaskAndProgress[]
+  teams: TeamAndStudent[]
+}
+
+export interface TaskAndProgress {
   ID: number
   Title: string
   GenreID: number
@@ -21,4 +26,21 @@ export interface TaskByStudentResponse {
   GenreDisplayOrder: number
   DisplayOrder: number
   Text: string
+  Progress: Progress[]
+}
+
+export interface Progress {
+  StudentID: number
+  Status: string
+}
+
+export interface TeamAndStudent {
+  ID: number
+  Name: string
+  Students: Student[]
+}
+
+export interface Student {
+  ID: number
+  Name: string
 }
