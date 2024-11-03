@@ -11,14 +11,9 @@ export default async function EditTaskPage({
   const task = await getTask(parseInt(params.id))
   const genres = await getGenres()
 
-  const handleUpdate = async (
-    title: string,
-    text: string,
-    genreId: number,
-    displayOrder: number,
-  ) => {
+  const handleUpdate = async (title: string, text: string, genreId: number) => {
     'use server'
-    await updateTask(task.ID, title, text, genreId, displayOrder)
+    await updateTask(task.ID, title, text, genreId)
     revalidatePath('/admin/tasks')
   }
 

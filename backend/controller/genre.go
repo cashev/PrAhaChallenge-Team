@@ -57,13 +57,12 @@ func GetGenre(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"genre": genre})
 }
 
-type CreateGenreRequest struct {
-	Name         string `json:"Name" binding:"required"`
-	DisplayOrder int    `json:"DisplayOrder" binding:"required"`
+type createGenreRequest struct {
+	Name string `json:"Name" binding:"required"`
 }
 
 func CreateGenre(c *gin.Context) {
-	var request CreateGenreRequest
+	var request createGenreRequest
 	if err := c.ShouldBind(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -72,9 +71,17 @@ func CreateGenre(c *gin.Context) {
 	// トランザクションを開始
 	tx := database.DB.Begin()
 
+	// 最大のDisplayOrderを取得
+	var maxDisplayOrder int
+	if err := tx.Model(&models.Genre{}).Select("COALESCE(MAX(display_order), 0)").Scan(&maxDisplayOrder).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "DisplayOrderの取得に失敗しました"})
+		return
+	}
+
 	genre := models.Genre{
 		Name:         request.Name,
-		DisplayOrder: request.DisplayOrder,
+		DisplayOrder: maxDisplayOrder + 1, // 最大値+1を設定
 	}
 	if err := tx.Create(&genre).Error; err != nil {
 		tx.Rollback()
@@ -115,6 +122,10 @@ func CreateGenre(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "ジャンルとGenrePublicationが正常に作成されました"})
 }
 
+type updateGenreRequest struct {
+	Name string `json:"Name" binding:"required"`
+}
+
 func UpdateGenre(c *gin.Context) {
 	id := c.Param("id")
 
@@ -123,15 +134,14 @@ func UpdateGenre(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	var request CreateGenreRequest
+	var request updateGenreRequest
 	if err := c.ShouldBind(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	genre.Name = request.Name
-	genre.DisplayOrder = request.DisplayOrder
 
-	if err := database.DB.Save(&genre).Error; err != nil {
+	if err := database.DB.Model(&genre).Updates(models.Genre{Name: request.Name}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -187,4 +197,36 @@ func DeleteGenre(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "ジャンルとGenrePublicationが正常に削除されました"})
+}
+
+type GenreOrderRequest struct {
+	GenreID  uint `json:"GenreID" binding:"required"`
+	NewOrder int  `json:"NewOrder" binding:"required"`
+}
+
+func UpdateGenreOrders(c *gin.Context) {
+	var request []GenreOrderRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := database.DB.Begin()
+	for _, req := range request {
+		if err := tx.Model(&models.Genre{}).
+			Where("id = ?", req.GenreID).
+			Update("display_order", req.NewOrder).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "トランザクションのコミットに失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ジャンルの表示順が正常に更新されました"})
 }

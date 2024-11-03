@@ -4,9 +4,9 @@ import { revalidatePath } from 'next/cache'
 import type React from 'react'
 
 const NewGenrePage: React.FC = () => {
-  async function handleCreateGenre(name: string, displayOrder: number) {
+  async function handleCreateGenre(name: string) {
     'use server'
-    await createGenre(name, displayOrder)
+    await createGenre(name)
     revalidatePath('/admin/genres')
     revalidatePath('/admin/genres/publications')
   }

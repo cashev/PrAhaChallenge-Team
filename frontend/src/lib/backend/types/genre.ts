@@ -7,3 +7,8 @@ export interface Genre {
 export interface GenreWithReference extends Genre {
   IsReferenced: boolean
 }
+
+export interface GenreOrder {
+  GenreID: number
+  NewOrder: number
+}

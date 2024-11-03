@@ -80,25 +80,35 @@ func GetTask(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"task": taskResponse})
 }
 
-type TaskRequest struct {
-	Title        string `json:"Title" binding:"required"`
-	Text         string `json:"Text" binding:"required"`
-	GenreID      uint   `json:"GenreID" binding:"required"`
-	DisplayOrder int    `json:"DisplayOrder" binding:"required"`
+type createTaskRequest struct {
+	Title   string `json:"Title" binding:"required"`
+	Text    string `json:"Text" binding:"required"`
+	GenreID uint   `json:"GenreID" binding:"required"`
 }
 
 func CreateTask(c *gin.Context) {
-	var request TaskRequest
+	var request createTaskRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// 同じジャンルの課題の最大DisplayOrderを取得
+	var maxDisplayOrder int
+	if err := database.DB.Model(&models.Task{}).
+		Joins("JOIN genre_tasks ON tasks.id = genre_tasks.task_id").
+		Where("genre_tasks.genre_id = ?", request.GenreID).
+		Select("COALESCE(MAX(tasks.display_order), 0)").
+		Scan(&maxDisplayOrder).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	task := models.Task{
 		Title:        request.Title,
 		Text:         request.Text,
-		DisplayOrder: request.DisplayOrder,
+		DisplayOrder: maxDisplayOrder + 1,
 	}
 
 	if err := database.DB.Create(&task).Error; err != nil {
@@ -117,8 +127,14 @@ func CreateTask(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "タスクが正常に作成されました"})
 }
 
+type updateTaskRequest struct {
+	Title   string `json:"Title" binding:"required"`
+	Text    string `json:"Text" binding:"required"`
+	GenreID uint   `json:"GenreID" binding:"required"`
+}
+
 func UpdateTask(c *gin.Context) {
-	var request TaskRequest
+	var request updateTaskRequest
 	id := c.Param("id")
 
 	var task models.Task
@@ -132,23 +148,17 @@ func UpdateTask(c *gin.Context) {
 		return
 	}
 
-	task.Title = request.Title
-	task.Text = request.Text
-	task.DisplayOrder = request.DisplayOrder
-
-	if err := database.DB.Save(&task).Error; err != nil {
+	// タスクの更新
+	if err := database.DB.Model(&task).Updates(models.Task{
+		Title: request.Title,
+		Text:  request.Text,
+	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	var genreTask models.GenreTask
-	if err := database.DB.Where("task_id = ?", task.ID).First(&genreTask).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	genreTask.GenreID = request.GenreID
-	if err := database.DB.Save(&genreTask).Error; err != nil {
+	// ジャンルタスクの更新
+	if err := database.DB.Model(&models.GenreTask{}).Where("task_id = ?", task.ID).Update("genre_id", request.GenreID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -179,4 +189,32 @@ func DeleteTask(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "タスクが正常に削除されました"})
+}
+
+type TaskOrderRequest struct {
+	TaskID   uint `json:"TaskID" binding:"required"`
+	NewOrder int  `json:"NewOrder" binding:"required"`
+}
+
+func UpdateTaskOrders(c *gin.Context) {
+	var request []TaskOrderRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := database.DB.Begin()
+	for _, req := range request {
+		// DisplayOrderのみを更新
+		if err := tx.Model(&models.Task{}).
+			Where("id = ?", req.TaskID).
+			Update("display_order", req.NewOrder).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{"message": "タスクの順番が正常に更新されました"})
 }

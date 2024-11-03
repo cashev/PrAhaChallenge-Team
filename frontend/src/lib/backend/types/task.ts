@@ -7,3 +7,8 @@ export interface Task {
   Text: string
   DisplayOrder: number
 }
+
+export interface TaskOrder {
+  TaskID: number
+  NewOrder: number
+}
