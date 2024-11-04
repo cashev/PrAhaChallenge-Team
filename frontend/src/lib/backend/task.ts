@@ -1,4 +1,8 @@
-import type { Task, TaskOrder } from '@/lib/backend/types/task'
+import type {
+  Task,
+  TaskByStudentResponse,
+  TaskOrder,
+} from '@/lib/backend/types/task'
 
 export async function getTasks(): Promise<Task[]> {
   const response = await fetch(`${process.env.BACKEND_URL}/tasks`)
@@ -63,4 +67,16 @@ export async function updateTaskOrders(taskOrders: TaskOrder[]): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(taskOrders),
   })
+}
+
+export async function getTasksByStudent(
+  token: string,
+): Promise<TaskByStudentResponse[]> {
+  const response = await fetch(`${process.env.BACKEND_URL}/student/tasks`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  const { tasks } = await response.json()
+  return tasks
 }

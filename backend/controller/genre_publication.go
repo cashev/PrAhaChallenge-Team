@@ -33,7 +33,7 @@ type teamPublicationStatus struct {
 
 type season struct {
 	ID     uint   `json:"ID"`
-	Number int    `json:"Number"`
+	Number uint   `json:"Number"`
 	Teams  []team `json:"Teams"`
 }
 

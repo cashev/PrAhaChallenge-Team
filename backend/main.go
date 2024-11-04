@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 
+	"github.com/cashev/PrAhaChallenge-Team/backend/auth/handler"
+	"github.com/cashev/PrAhaChallenge-Team/backend/auth/middleware"
 	"github.com/cashev/PrAhaChallenge-Team/backend/controller"
 	"github.com/cashev/PrAhaChallenge-Team/backend/database"
 	"github.com/gin-gonic/gin"
@@ -22,6 +24,10 @@ func setupDatabase() {
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
+	r.POST("/login-as-student", handler.LoginAsStudent)
+
+	r.GET("/students/:id", controller.GetStudentInfo)
+
 	r.GET("/tasks", controller.GetTasks)
 	r.POST("/tasks", controller.CreateTask)
 	r.GET("/tasks/:id", controller.GetTask)
@@ -38,6 +44,12 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/genre-publications", controller.GetGenrePublications)
 	r.PATCH("/genre-publications", controller.UpdateGenrePublications)
+
+	authorized := r.Group("/")
+	authorized.Use(middleware.AuthStudentMiddleware())
+	{
+		authorized.GET("/student/tasks", controller.GetTasksByStudent)
+	}
 
 	return r
 }

@@ -40,13 +40,14 @@ func clearDatabase(db *gorm.DB) {
 	})
 }
 
-type name struct {
+type studentInfo struct {
 	first string
 	last  string
+	email string
 }
 
-func readNames(path string) ([]name, error) {
-	names := []name{}
+func readStudents(path string) ([]studentInfo, error) {
+	students := []studentInfo{}
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -64,14 +65,15 @@ func readNames(path string) ([]name, error) {
 			continue // ヘッダーをスキップ
 		}
 		if len(record) >= 2 {
-			names = append(names, name{
+			students = append(students, studentInfo{
 				last:  record[0],
 				first: record[1],
+				email: record[2],
 			})
 		}
 	}
 
-	return names, nil
+	return students, nil
 }
 
 func createSeasonAndTeam(db *gorm.DB) {
@@ -79,7 +81,7 @@ func createSeasonAndTeam(db *gorm.DB) {
 	var teams []models.Team
 	// 9つの期を作成
 	for i := 1; i <= 9; i++ {
-		season := models.Season{Number: i}
+		season := models.Season{Number: uint(i)}
 		db.Create(&season)
 
 		// 各期に3つのチームを作成
@@ -97,16 +99,17 @@ func createSeasonAndTeam(db *gorm.DB) {
 		}
 	}
 
-	names, err := readNames("database/test_util/students.csv")
+	students, err := readStudents("database/test_util/students.csv")
 	if err != nil {
-		log.Fatalf("Failed to read names: %v", err)
+		log.Fatalf("Failed to read students: %v", err)
 	}
 
 	// 受講中の学生を作成（各期3チーム、各チーム3人で計81人）
 	for i := 0; i < 81; i++ {
 		student := models.Student{
-			FirstName: names[i].first,
-			LastName:  names[i].last,
+			FirstName: students[i].first,
+			LastName:  students[i].last,
+			Email:     students[i].email,
 			Status:    "受講中",
 		}
 		db.Create(&student)
@@ -123,8 +126,9 @@ func createSeasonAndTeam(db *gorm.DB) {
 	// 休会中の受講生を27人作成
 	for i := 81; i < 108; i++ {
 		student := models.Student{
-			FirstName: names[i].first,
-			LastName:  names[i].last,
+			FirstName: students[i].first,
+			LastName:  students[i].last,
+			Email:     students[i].email,
 			Status:    "休会中",
 		}
 		db.Create(&student)
@@ -133,8 +137,9 @@ func createSeasonAndTeam(db *gorm.DB) {
 	// 退会済みの受講生を12人作成
 	for i := 108; i < 120; i++ {
 		student := models.Student{
-			FirstName: names[i].first,
-			LastName:  names[i].last,
+			FirstName: students[i].first,
+			LastName:  students[i].last,
+			Email:     students[i].email,
 			Status:    "退会済",
 		}
 		db.Create(&student)

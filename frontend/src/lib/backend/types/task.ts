@@ -12,3 +12,13 @@ export interface TaskOrder {
   TaskID: number
   NewOrder: number
 }
+
+export interface TaskByStudentResponse {
+  ID: number
+  Title: string
+  GenreID: number
+  GenreName: string
+  GenreDisplayOrder: number
+  DisplayOrder: number
+  Text: string
+}
