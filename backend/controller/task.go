@@ -385,3 +385,80 @@ func UpdateTaskProgress(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "進捗情報が正常に更新されました"})
 }
+
+func GetTasksAndProgressBySeason(c *gin.Context) {
+	seasonNumber := c.Param("season")
+
+	var season models.Season
+	if err := database.DB.Preload("SeasonTeams").
+		Preload("SeasonTeams.Team").
+		Preload("SeasonTeams.Team.TeamStudents").
+		Preload("SeasonTeams.Team.TeamStudents.Student").
+		Where("number = ?", seasonNumber).
+		First(&season).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "シーズン情報が見つかりません"})
+		return
+	}
+
+	var taskInfos []models.Task
+	if err := database.DB.Preload("GenreTasks.Genre").Find(&taskInfos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "課題情報の取得に失敗しました"})
+		return
+	}
+	taskIds := []uint{}
+	for _, task := range taskInfos {
+		taskIds = append(taskIds, task.ID)
+	}
+	studentIds := []uint{}
+	for _, seasonTeam := range season.SeasonTeams {
+		for _, teamStudent := range seasonTeam.Team.TeamStudents {
+			studentIds = append(studentIds, teamStudent.StudentID)
+		}
+	}
+
+	var progressInfos []models.TaskProgress
+	if err := database.DB.Where("task_id IN (?) AND student_id IN (?)", taskIds, studentIds).Find(&progressInfos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "進捗情報の取得に失敗しました"})
+		return
+	}
+
+	tasks := []taskAndProgress{}
+	for _, task := range taskInfos {
+		task := taskAndProgress{
+			ID:                task.ID,
+			Title:             task.Title,
+			Text:              task.Text,
+			DisplayOrder:      task.DisplayOrder,
+			GenreID:           task.GenreTasks[0].GenreID,
+			GenreName:         task.GenreTasks[0].Genre.Name,
+			GenreDisplayOrder: task.GenreTasks[0].Genre.DisplayOrder,
+			Progress:          []progress{},
+		}
+		for _, progressInfo := range progressInfos {
+			if progressInfo.TaskID == task.ID {
+				task.Progress = append(task.Progress, progress{
+					StudentID: progressInfo.StudentID,
+					Status:    progressInfo.Status,
+				})
+			}
+		}
+		tasks = append(tasks, task)
+	}
+	teams := []teamAndStudent{}
+	for _, seasonTeam := range season.SeasonTeams {
+		team := teamAndStudent{
+			ID:       seasonTeam.TeamID,
+			Name:     seasonTeam.Team.Name,
+			Students: []student{},
+		}
+		for _, teamStudent := range seasonTeam.Team.TeamStudents {
+			team.Students = append(team.Students, student{
+				ID:   teamStudent.StudentID,
+				Name: teamStudent.Student.FirstName + " " + teamStudent.Student.LastName,
+			})
+		}
+		teams = append(teams, team)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "teams": teams})
+}

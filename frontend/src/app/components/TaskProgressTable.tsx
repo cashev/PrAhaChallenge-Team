@@ -19,7 +19,7 @@ interface TaskProgressTableProps {
     taskID: number,
     studentID: number,
     status: string,
-  ) => Promise<void> | undefined
+  ) => Promise<void>
 }
 
 const TaskProgressTable: React.FC<TaskProgressTableProps> = ({

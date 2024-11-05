@@ -100,3 +100,13 @@ export async function updateTaskProgress(
     }),
   })
 }
+
+export async function getTasksAndProgressBySeason(
+  seasonID: number,
+): Promise<TaskAndProgressResponse> {
+  const response = await fetch(
+    `${process.env.BACKEND_URL}/progress/${seasonID}`,
+  )
+  const { tasks, teams } = await response.json()
+  return { tasks, teams }
+}
