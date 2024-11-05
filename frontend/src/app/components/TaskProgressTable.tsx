@@ -35,13 +35,13 @@ const TaskProgressTable: React.FC<TaskProgressTableProps> = ({
           <tr>
             <th
               rowSpan={2}
-              className="sticky left-0 z-10 min-w-[200px] border-y border-l bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-700 dark:text-gray-300"
+              className="min-w-[200px] border-y border-l bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-700 dark:text-gray-300"
             >
               課題
             </th>
             <th
               rowSpan={2}
-              className="sticky left-[200px] z-10 min-w-[150px] border bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-700 dark:text-gray-300"
+              className="min-w-[150px] border bg-gray-50 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:bg-gray-700 dark:text-gray-300"
             >
               ジャンル
             </th>
@@ -71,10 +71,21 @@ const TaskProgressTable: React.FC<TaskProgressTableProps> = ({
         <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
           {tasks.map((task) => (
             <tr key={task.ID}>
-              <td className="sticky left-0 z-10 min-w-[200px] whitespace-nowrap border-y border-l bg-white px-6 py-4 text-sm font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-100">
-                {task.Title}
+              <td className="min-w-[200px] whitespace-nowrap border-y border-l bg-white px-6 py-4 text-sm font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-100">
+                {task.Text ? (
+                  <a
+                    href={task.Text}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {task.Title}
+                  </a>
+                ) : (
+                  task.Title
+                )}
               </td>
-              <td className="sticky left-[200px] z-10 min-w-[150px] whitespace-nowrap border bg-white px-6 py-4 text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+              <td className="min-w-[150px] whitespace-nowrap border bg-white px-6 py-4 text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                 {task.GenreName}
               </td>
               {teams.map((team) =>

@@ -93,7 +93,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
               ジャンル
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-              本文
+              URL
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
               操作

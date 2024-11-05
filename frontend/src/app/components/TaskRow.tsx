@@ -50,7 +50,16 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, onDelete, isReordering }) => {
         {task.GenreName}
       </td>
       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-        {task.Text}
+        <a
+          href={task.Text}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline"
+        >
+          {task.Text.length > 30
+            ? `${task.Text.substring(0, 30)}...`
+            : task.Text}
+        </a>
       </td>
       <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
         <div className="flex items-center">
