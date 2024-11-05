@@ -327,12 +327,14 @@ func GetTasksAndProgressByStudent(c *gin.Context) {
 		task := taskAndProgress{
 			ID:                info.TaskID,
 			Title:             info.TaskTitle,
-			Text:              info.TaskText,
 			DisplayOrder:      info.TaskDisplayOrder,
 			GenreID:           info.GenreID,
 			GenreName:         info.GenreName,
 			GenreDisplayOrder: info.GenreDisplayOrder,
 			Progress:          []progress{},
+		}
+		if info.IsPublished {
+			task.Text = info.TaskText
 		}
 		for _, progressInfo := range progressInfos {
 			if progressInfo.TaskID == info.TaskID {
