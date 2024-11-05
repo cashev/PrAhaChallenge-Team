@@ -46,11 +46,11 @@ const ProgressSelector = ({
   }
 
   return (
-    <div className="bg-gray-800 text-white">
+    <div>
       <select
         onChange={onSeasonChange}
         value={selectedSeason}
-        className="mb-4 bg-gray-700 text-white"
+        className="mb-4 bg-white py-3 text-lg text-black dark:bg-gray-800 dark:text-gray-200"
       >
         {seasons.map((season) => (
           <option key={season.ID} value={season.Number}>
