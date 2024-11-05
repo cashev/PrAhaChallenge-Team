@@ -123,16 +123,24 @@ const GenrePublicationTable: React.FC<GenrePublicationTableProps> = ({
                               )
                             }
                             style={{
-                              cursor: isEditing ? 'pointer' : 'default',
+                              cursor:
+                                isEditing && publication !== undefined
+                                  ? 'pointer'
+                                  : 'default',
                             }}
                           >
-                            <input
-                              type="checkbox"
-                              checked={publication}
-                              onChange={() => {}} // React の制御付きコンポーネントの警告を防ぐため
-                              disabled={!isEditing}
-                              className="size-4 cursor-pointer"
-                            />
+                            {isEditing ? (
+                              <input
+                                type="checkbox"
+                                checked={publication}
+                                onChange={() => {}}
+                                className="size-4 cursor-pointer"
+                              />
+                            ) : (
+                              <div className="flex justify-center">
+                                {publication ? '✅' : '⬜'}
+                              </div>
+                            )}
                           </td>
                         )
                       })}
