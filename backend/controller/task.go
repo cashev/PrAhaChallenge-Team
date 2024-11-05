@@ -362,3 +362,26 @@ func GetTasksAndProgressByStudent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "teams": teams})
 }
+
+type updateTaskProgressRequest struct {
+	TaskID    uint   `json:"TaskID" binding:"required"`
+	StudentID uint   `json:"StudentID" binding:"required"`
+	Status    string `json:"Status" binding:"required"`
+}
+
+func UpdateTaskProgress(c *gin.Context) {
+	var request updateTaskProgressRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := database.DB.Model(&models.TaskProgress{}).
+		Where("task_id = ? AND student_id = ?", request.TaskID, request.StudentID).
+		Update("status", request.Status).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "進捗情報が正常に更新されました"})
+}

@@ -80,3 +80,23 @@ export async function getTasksByStudent(
   const { tasks, teams } = await response.json()
   return { tasks, teams }
 }
+
+export async function updateTaskProgress(
+  token: string,
+  taskID: number,
+  studentID: number,
+  status: string,
+): Promise<void> {
+  await fetch(`${process.env.BACKEND_URL}/student/progress`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      TaskID: taskID,
+      StudentID: studentID,
+      Status: status,
+    }),
+  })
+}

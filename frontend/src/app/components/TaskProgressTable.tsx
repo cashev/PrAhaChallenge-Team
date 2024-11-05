@@ -14,20 +14,19 @@ const statusColors = {
 interface TaskProgressTableProps {
   tasks: TaskAndProgress[]
   teams: TeamAndStudent[]
+  currentStudentID: string | undefined
   updateTaskProgress: (
-    token: string,
     taskID: number,
     studentID: number,
     status: string,
-  ) => Promise<void>
-  accessToken: string
+  ) => Promise<void> | undefined
 }
 
 const TaskProgressTable: React.FC<TaskProgressTableProps> = ({
   tasks,
   teams,
+  currentStudentID,
   updateTaskProgress,
-  accessToken,
 }) => {
   return (
     <div className="relative overflow-x-auto">
@@ -87,25 +86,52 @@ const TaskProgressTable: React.FC<TaskProgressTableProps> = ({
                   return (
                     <td
                       key={`${task.ID}-${student.ID}`}
-                      className="border px-6 py-4 text-center"
+                      className="whitespace-nowrap border px-6 py-4 text-center"
                     >
-                      <select
-                        value={status}
-                        onChange={(e) =>
-                          updateTaskProgress(
-                            accessToken,
-                            task.ID,
-                            student.ID,
-                            e.target.value,
-                          )
-                        }
-                        className={`rounded-md p-1.5 text-xs ${statusColors[status as keyof typeof statusColors]}`}
-                      >
-                        <option value="未着手">未着手</option>
-                        <option value="着手中">着手中</option>
-                        <option value="レビュー待ち">レビュー待ち</option>
-                        <option value="完了">完了</option>
-                      </select>
+                      {student.ID.toString() === currentStudentID ? (
+                        <select
+                          value={status}
+                          onChange={(e) =>
+                            updateTaskProgress(
+                              task.ID,
+                              student.ID,
+                              e.target.value,
+                            )
+                          }
+                          className={`rounded-md p-1.5 text-xs ${statusColors[status as keyof typeof statusColors]}`}
+                        >
+                          <option
+                            value="未着手"
+                            style={{ backgroundColor: '#f3f4f6' }}
+                          >
+                            未着手
+                          </option>
+                          <option
+                            value="着手中"
+                            style={{ backgroundColor: '#bfdbfe' }}
+                          >
+                            着手中
+                          </option>
+                          <option
+                            value="レビュー待ち"
+                            style={{ backgroundColor: '#fef08a' }}
+                          >
+                            レビュー待ち
+                          </option>
+                          <option
+                            value="完了"
+                            style={{ backgroundColor: '#bbf7d0' }}
+                          >
+                            完了
+                          </option>
+                        </select>
+                      ) : (
+                        <div
+                          className={`text-xs ${statusColors[status as keyof typeof statusColors]}`}
+                        >
+                          {status}
+                        </div>
+                      )}
                     </td>
                   )
                 }),

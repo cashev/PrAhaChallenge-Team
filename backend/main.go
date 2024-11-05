@@ -49,6 +49,7 @@ func setupRouter() *gin.Engine {
 	authorized.Use(middleware.AuthStudentMiddleware())
 	{
 		authorized.GET("/student/tasks", controller.GetTasksAndProgressByStudent)
+		authorized.POST("/student/progress", controller.UpdateTaskProgress)
 	}
 
 	return r
