@@ -3,6 +3,9 @@
 run:
 	go run main.go
 
+run-watch:
+	reflex -r '(\.go$$|go\.mod)' -s go run main.go
+
 # test:
 #   go test -v ./...
 

@@ -7,6 +7,7 @@ import (
 	"github.com/cashev/PrAhaChallenge-Team/backend/auth/middleware"
 	"github.com/cashev/PrAhaChallenge-Team/backend/controller"
 	"github.com/cashev/PrAhaChallenge-Team/backend/database"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,8 +25,16 @@ func setupDatabase() {
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // 一時的に全てのオリジンを許可
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowCredentials: true,
+	}))
+
 	r.POST("/login-as-student", handler.LoginAsStudent)
 
+	r.GET("/students", controller.GetStudents)
 	r.GET("/students/:id", controller.GetStudentInfo)
 
 	r.GET("/tasks", controller.GetTasks)
