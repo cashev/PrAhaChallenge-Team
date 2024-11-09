@@ -1,6 +1,6 @@
 import type {
   Task,
-  TaskByStudentResponse,
+  TaskAndProgressResponse,
   TaskOrder,
 } from '@/lib/backend/types/task'
 
@@ -71,12 +71,42 @@ export async function updateTaskOrders(taskOrders: TaskOrder[]): Promise<void> {
 
 export async function getTasksByStudent(
   token: string,
-): Promise<TaskByStudentResponse[]> {
+): Promise<TaskAndProgressResponse> {
   const response = await fetch(`${process.env.BACKEND_URL}/student/tasks`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   })
-  const { tasks } = await response.json()
-  return tasks
+  const { tasks, teams } = await response.json()
+  return { tasks, teams }
+}
+
+export async function updateTaskProgress(
+  token: string,
+  taskID: number,
+  studentID: number,
+  status: string,
+): Promise<void> {
+  await fetch(`${process.env.BACKEND_URL}/student/progress`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      TaskID: taskID,
+      StudentID: studentID,
+      Status: status,
+    }),
+  })
+}
+
+export async function getTasksAndProgressBySeason(
+  seasonID: number,
+): Promise<TaskAndProgressResponse> {
+  const response = await fetch(
+    `${process.env.BACKEND_URL}/progress/${seasonID}`,
+  )
+  const { tasks, teams } = await response.json()
+  return { tasks, teams }
 }

@@ -45,10 +45,15 @@ func setupRouter() *gin.Engine {
 	r.GET("/genre-publications", controller.GetGenrePublications)
 	r.PATCH("/genre-publications", controller.UpdateGenrePublications)
 
+	r.GET("/progress/:season", controller.GetTasksAndProgressBySeason)
+
+	r.GET("/seasons", controller.GetSeasons)
+
 	authorized := r.Group("/")
 	authorized.Use(middleware.AuthStudentMiddleware())
 	{
-		authorized.GET("/student/tasks", controller.GetTasksByStudent)
+		authorized.GET("/student/tasks", controller.GetTasksAndProgressByStudent)
+		authorized.POST("/student/progress", controller.UpdateTaskProgress)
 	}
 
 	return r

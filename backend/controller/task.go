@@ -219,17 +219,34 @@ func UpdateTaskOrders(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "タスクの順番が正常に更新されました"})
 }
 
-type TaskByStudentResponse struct {
-	ID                uint   `json:"ID"`
-	Title             string `json:"Title"`
-	GenreID           uint   `json:"GenreID"`
-	GenreName         string `json:"GenreName"`
-	GenreDisplayOrder int    `json:"GenreDisplayOrder"`
-	DisplayOrder      int    `json:"DisplayOrder"`
-	Text              string `json:"Text"`
+type taskAndProgress struct {
+	ID                uint       `json:"ID"`
+	Title             string     `json:"Title"`
+	GenreID           uint       `json:"GenreID"`
+	GenreName         string     `json:"GenreName"`
+	GenreDisplayOrder int        `json:"GenreDisplayOrder"`
+	DisplayOrder      int        `json:"DisplayOrder"`
+	Text              string     `json:"Text"`
+	Progress          []progress `json:"Progress"`
 }
 
-func GetTasksByStudent(c *gin.Context) {
+type progress struct {
+	StudentID uint   `json:"StudentID"`
+	Status    string `json:"Status"`
+}
+
+type teamAndStudent struct {
+	ID       uint      `json:"ID"`
+	Name     string    `json:"Name"`
+	Students []student `json:"Students"`
+}
+
+type student struct {
+	ID   uint   `json:"ID"`
+	Name string `json:"Name"`
+}
+
+func GetTasksAndProgressByStudent(c *gin.Context) {
 	studentID, exists := c.Get("studentID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "学生IDが見つかりません"})
@@ -239,7 +256,13 @@ func GetTasksByStudent(c *gin.Context) {
 	// 学生のチーム情報とシーズン情報を取得
 	var teamStudent models.TeamStudent
 	if err := database.DB.
+		Preload("Team").
+		Preload("Team.SeasonTeams").
+		Preload("Team.SeasonTeams.Season").
 		Preload("Team.SeasonTeams.Season.SeasonTeams").
+		Preload("Team.SeasonTeams.Season.SeasonTeams.Team").
+		Preload("Team.SeasonTeams.Season.SeasonTeams.Team.TeamStudents").
+		Preload("Team.SeasonTeams.Season.SeasonTeams.Team.TeamStudents.Student").
 		Where("student_id = ?", studentID).
 		First(&teamStudent).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "チーム情報が見つかりません"})
@@ -249,11 +272,6 @@ func GetTasksByStudent(c *gin.Context) {
 	if len(teamStudent.Team.SeasonTeams) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "シーズン情報が見つかりません"})
 		return
-	}
-
-	teamIDs := []uint{}
-	for _, st := range teamStudent.Team.SeasonTeams[0].Season.SeasonTeams {
-		teamIDs = append(teamIDs, st.TeamID)
 	}
 
 	type TaskInfo struct {
@@ -279,29 +297,170 @@ func GetTasksByStudent(c *gin.Context) {
 		Joins("JOIN genre_publications gp1 ON genres.id = gp1.genre_id").
 		Joins("JOIN genre_publications gp2 ON genres.id = gp2.genre_id").
 		Where("gp1.team_id = ?", teamStudent.TeamID).
-		Where("gp2.team_id IN ? AND gp2.is_published = ?", teamIDs, true).
+		Where("gp2.season_id = ? AND gp2.is_published = ?", teamStudent.Team.SeasonTeams[0].SeasonID, true).
 		Order("genres.display_order, tasks.display_order").
 		Find(&taskInfos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "課題情報の取得に失敗しました"})
 		return
 	}
 
-	// レスポンスの構築
-	tasks := []TaskByStudentResponse{}
+	taskIds := []uint{}
 	for _, info := range taskInfos {
-		task := TaskByStudentResponse{
+		taskIds = append(taskIds, info.TaskID)
+	}
+	studentIds := []uint{}
+	for _, seasonTeam := range teamStudent.Team.SeasonTeams[0].Season.SeasonTeams {
+		for _, teamStudent := range seasonTeam.Team.TeamStudents {
+			studentIds = append(studentIds, teamStudent.StudentID)
+		}
+	}
+
+	var progressInfos []models.TaskProgress
+	if err := database.DB.Where("task_id IN (?) AND student_id IN (?)", taskIds, studentIds).Find(&progressInfos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "進捗情報の取得に失敗しました"})
+		return
+	}
+
+	// レスポンスの構築
+	tasks := []taskAndProgress{}
+	for _, info := range taskInfos {
+		task := taskAndProgress{
 			ID:                info.TaskID,
 			Title:             info.TaskTitle,
+			DisplayOrder:      info.TaskDisplayOrder,
 			GenreID:           info.GenreID,
 			GenreName:         info.GenreName,
 			GenreDisplayOrder: info.GenreDisplayOrder,
-			DisplayOrder:      info.TaskDisplayOrder,
+			Progress:          []progress{},
 		}
-		if info.TeamID == teamStudent.TeamID && info.IsPublished {
+		if info.IsPublished {
 			task.Text = info.TaskText
+		}
+		for _, progressInfo := range progressInfos {
+			if progressInfo.TaskID == info.TaskID {
+				task.Progress = append(task.Progress, progress{
+					StudentID: progressInfo.StudentID,
+					Status:    progressInfo.Status,
+				})
+			}
 		}
 		tasks = append(tasks, task)
 	}
+	teams := []teamAndStudent{}
+	for _, seasonTeam := range teamStudent.Team.SeasonTeams[0].Season.SeasonTeams {
+		team := teamAndStudent{
+			ID:       seasonTeam.TeamID,
+			Name:     seasonTeam.Team.Name,
+			Students: []student{},
+		}
+		for _, teamStudent := range seasonTeam.Team.TeamStudents {
+			team.Students = append(team.Students, student{
+				ID:   teamStudent.StudentID,
+				Name: teamStudent.Student.FirstName + " " + teamStudent.Student.LastName,
+			})
+		}
+		teams = append(teams, team)
+	}
 
-	c.JSON(http.StatusOK, gin.H{"tasks": tasks})
+	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "teams": teams})
+}
+
+type updateTaskProgressRequest struct {
+	TaskID    uint   `json:"TaskID" binding:"required"`
+	StudentID uint   `json:"StudentID" binding:"required"`
+	Status    string `json:"Status" binding:"required"`
+}
+
+func UpdateTaskProgress(c *gin.Context) {
+	var request updateTaskProgressRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := database.DB.Model(&models.TaskProgress{}).
+		Where("task_id = ? AND student_id = ?", request.TaskID, request.StudentID).
+		Update("status", request.Status).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "進捗情報が正常に更新されました"})
+}
+
+func GetTasksAndProgressBySeason(c *gin.Context) {
+	seasonNumber := c.Param("season")
+
+	var season models.Season
+	if err := database.DB.Preload("SeasonTeams").
+		Preload("SeasonTeams.Team").
+		Preload("SeasonTeams.Team.TeamStudents").
+		Preload("SeasonTeams.Team.TeamStudents.Student").
+		Where("number = ?", seasonNumber).
+		First(&season).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "シーズン情報が見つかりません"})
+		return
+	}
+
+	var taskInfos []models.Task
+	if err := database.DB.Preload("GenreTasks.Genre").Find(&taskInfos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "課題情報の取得に失敗しました"})
+		return
+	}
+	taskIds := []uint{}
+	for _, task := range taskInfos {
+		taskIds = append(taskIds, task.ID)
+	}
+	studentIds := []uint{}
+	for _, seasonTeam := range season.SeasonTeams {
+		for _, teamStudent := range seasonTeam.Team.TeamStudents {
+			studentIds = append(studentIds, teamStudent.StudentID)
+		}
+	}
+
+	var progressInfos []models.TaskProgress
+	if err := database.DB.Where("task_id IN (?) AND student_id IN (?)", taskIds, studentIds).Find(&progressInfos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "進捗情報の取得に失敗しました"})
+		return
+	}
+
+	tasks := []taskAndProgress{}
+	for _, task := range taskInfos {
+		task := taskAndProgress{
+			ID:                task.ID,
+			Title:             task.Title,
+			Text:              task.Text,
+			DisplayOrder:      task.DisplayOrder,
+			GenreID:           task.GenreTasks[0].GenreID,
+			GenreName:         task.GenreTasks[0].Genre.Name,
+			GenreDisplayOrder: task.GenreTasks[0].Genre.DisplayOrder,
+			Progress:          []progress{},
+		}
+		for _, progressInfo := range progressInfos {
+			if progressInfo.TaskID == task.ID {
+				task.Progress = append(task.Progress, progress{
+					StudentID: progressInfo.StudentID,
+					Status:    progressInfo.Status,
+				})
+			}
+		}
+		tasks = append(tasks, task)
+	}
+	teams := []teamAndStudent{}
+	for _, seasonTeam := range season.SeasonTeams {
+		team := teamAndStudent{
+			ID:       seasonTeam.TeamID,
+			Name:     seasonTeam.Team.Name,
+			Students: []student{},
+		}
+		for _, teamStudent := range seasonTeam.Team.TeamStudents {
+			team.Students = append(team.Students, student{
+				ID:   teamStudent.StudentID,
+				Name: teamStudent.Student.FirstName + " " + teamStudent.Student.LastName,
+			})
+		}
+		teams = append(teams, team)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "teams": teams})
 }

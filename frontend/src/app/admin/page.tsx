@@ -30,6 +30,14 @@ const AdminDashboard: React.FC = () => {
                   ジャンル一覧
                 </Link>
               </li>
+              <li className="py-4">
+                <Link
+                  href="/admin/progress"
+                  className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  課題進捗一覧
+                </Link>
+              </li>
               {/* 他の管理メニュー項目をここに追加 */}
             </ul>
           </div>

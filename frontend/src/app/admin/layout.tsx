@@ -31,6 +31,12 @@ export default function AdminLayout({
                 >
                   ジャンル一覧
                 </Link>
+                <Link
+                  href="/admin/progress"
+                  className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-gray-900 hover:border-gray-300 dark:text-gray-300 dark:hover:border-gray-700"
+                >
+                  課題進捗一覧
+                </Link>
                 {/* 他のナビゲーション項目 */}
               </div>
             </div>

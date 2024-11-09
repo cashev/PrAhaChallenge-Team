@@ -92,7 +92,7 @@ export default function TaskForm({
           htmlFor="text"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-          本文
+          URL
         </label>
         <textarea
           id="text"
