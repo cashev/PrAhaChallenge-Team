@@ -47,6 +47,13 @@ export default async function StudentPage() {
               >
                 課題一覧へ
               </Link>
+              <div className="my-4"></div>
+              <Link
+                href="/student/contact"
+                className="inline-block rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+              >
+                お問い合わせへ
+              </Link>
             </div>
           </div>
         </div>

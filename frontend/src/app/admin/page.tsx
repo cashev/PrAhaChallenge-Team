@@ -38,6 +38,14 @@ const AdminDashboard: React.FC = () => {
                   課題進捗一覧
                 </Link>
               </li>
+              <li className="py-4">
+                <Link
+                  href="/admin/supports"
+                  className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  問い合わせ一覧
+                </Link>
+              </li>
               {/* 他の管理メニュー項目をここに追加 */}
             </ul>
           </div>
