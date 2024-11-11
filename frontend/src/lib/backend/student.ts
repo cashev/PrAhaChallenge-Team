@@ -17,7 +17,7 @@ export const getStudentInfo = async (
 
 export const getStudents = async (
   filters: Record<string, string>,
-): Promise<StudentsResponse[]> => {
+): Promise<StudentsResponse> => {
   const queryParams = new URLSearchParams(filters).toString()
 
   try {
@@ -32,11 +32,13 @@ export const getStudents = async (
       throw new Error('Failed to fetch students')
     }
 
-    const { students } = await response.json()
-
-    return students
+    const data: StudentsResponse = await response.json()
+    return data
   } catch (error) {
     console.error('Error fetching students:', error)
-    return []
+    return {
+      students: [],
+      totalCount: 0,
+    }
   }
 }

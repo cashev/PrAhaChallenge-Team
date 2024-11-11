@@ -1,11 +1,11 @@
 'use client'
 
-import type { StudentsResponse } from '@/lib/backend/types/student-type'
+import type { StudentList } from '@/lib/backend/types/student-type'
 import { formatDate } from '@/util/dateUtils'
 import type React from 'react'
 
 interface StudentRowProps {
-  student: StudentsResponse
+  student: StudentList
 }
 
 const StudentRow: React.FC<StudentRowProps> = ({ student }) => {

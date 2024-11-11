@@ -8,7 +8,7 @@ export interface StudentInfoResponse {
   LastName: string
 }
 
-export interface StudentsResponse {
+export interface StudentList {
   StudentID: number
   FirstName: string
   LastName: string
@@ -20,4 +20,9 @@ export interface StudentsResponse {
   SeasonNumber: number | null
   TeamID: number | null
   TeamName: string | null
+}
+
+export interface StudentsResponse {
+  students: StudentList[]
+  totalCount: number
 }

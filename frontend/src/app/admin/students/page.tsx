@@ -8,25 +8,32 @@ import { useEffect, useState } from 'react'
 
 export default function StudentsPage() {
   const searchParams = useSearchParams()
-  const [students, setStudents] = useState<StudentsResponse[]>([])
+  const [studentsData, setStudentsData] = useState<StudentsResponse>({
+    students: [],
+    totalCount: 0,
+  })
 
   useEffect(() => {
     const params = Object.fromEntries(searchParams.entries())
     const fetchStudents = async () => {
-      const fetchedStudents = await getStudents(params)
-      setStudents(fetchedStudents)
+      const response = await getStudents(params)
+      setStudentsData(response)
     }
     fetchStudents()
   }, [searchParams])
 
   return (
-    <div className="mx-auto max-w-5xl py-8">
+    <div className="mx-auto max-w-7xl py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           受講生一覧
         </h1>
       </div>
-      <StudentTable students={students} searchParams={searchParams} />
+      <StudentTable
+        students={studentsData.students}
+        totalCount={studentsData.totalCount}
+        searchParams={searchParams}
+      />
     </div>
   )
 }
