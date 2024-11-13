@@ -4,9 +4,9 @@ import StudentTable from '@/app/components/StudentTable'
 import { getStudents } from '@/lib/backend/student'
 import type { StudentsResponse } from '@/lib/backend/types/student-type'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
-export default function StudentsPage() {
+function StudentsPageContent() {
   const searchParams = useSearchParams()
   const [studentsData, setStudentsData] = useState<StudentsResponse>({
     students: [],
@@ -35,5 +35,13 @@ export default function StudentsPage() {
         searchParams={searchParams}
       />
     </div>
+  )
+}
+
+export default function StudentsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <StudentsPageContent />
+    </Suspense>
   )
 }
