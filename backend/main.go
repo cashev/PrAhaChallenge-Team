@@ -1,16 +1,31 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/cashev/PrAhaChallenge-Team/backend/auth/handler"
 	"github.com/cashev/PrAhaChallenge-Team/backend/auth/middleware"
 	"github.com/cashev/PrAhaChallenge-Team/backend/controller"
 	"github.com/cashev/PrAhaChallenge-Team/backend/database"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "development"
+	}
+
+	if env == "development" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	}
+
 	setupDatabase()
 	r := setupRouter()
 	port := getPort()
@@ -24,8 +39,16 @@ func setupDatabase() {
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowCredentials: true,
+	}))
+
 	r.POST("/login-as-student", handler.LoginAsStudent)
 
+	r.GET("/students", controller.GetStudents)
 	r.GET("/students/:id", controller.GetStudentInfo)
 
 	r.GET("/tasks", controller.GetTasks)

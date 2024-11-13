@@ -1,4 +1,7 @@
-import type { StudentInfoResponse } from './types/student-type'
+import type {
+  StudentInfoResponse,
+  StudentsResponse,
+} from './types/student-type'
 
 export const getStudentInfo = async (
   studentId: string,
@@ -10,4 +13,32 @@ export const getStudentInfo = async (
     },
   )
   return await response.json()
+}
+
+export const getStudents = async (
+  filters: Record<string, string>,
+): Promise<StudentsResponse> => {
+  const queryParams = new URLSearchParams(filters).toString()
+
+  try {
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/students?${queryParams}`,
+      {
+        cache: 'no-store',
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch students')
+    }
+
+    const data: StudentsResponse = await response.json()
+    return data
+  } catch (error) {
+    console.error('Error fetching students:', error)
+    return {
+      students: [],
+      totalCount: 0,
+    }
+  }
 }
