@@ -49,11 +49,18 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/seasons", controller.GetSeasons)
 
+	r.GET("/status-change-requests/:id", controller.GetStatusChangeRequest)
+	r.GET("/status-change-requests/unprocessed", controller.GetUnprocessedStatusChangeRequests)
+	r.GET("/status-change-requests/processed", controller.GetProcessedStatusChangeRequests)
+	r.POST("/status-change-requests/process", controller.ProcessStatusChange)
+
 	authorized := r.Group("/")
 	authorized.Use(middleware.AuthStudentMiddleware())
 	{
 		authorized.GET("/student/tasks", controller.GetTasksAndProgressByStudent)
 		authorized.POST("/student/progress", controller.UpdateTaskProgress)
+
+		authorized.POST("/student/status-change-request", controller.SubmitStatusChange)
 	}
 
 	return r

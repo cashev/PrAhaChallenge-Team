@@ -32,6 +32,14 @@ export default function StudentLayout({
                   課題一覧
                 </Link>
               </div>
+              <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
+                <Link
+                  href="/student/contact"
+                  className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-gray-900 hover:border-gray-300 dark:text-gray-300 dark:hover:border-gray-700"
+                >
+                  お問い合わせ
+                </Link>
+              </div>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
               {session?.user && <LogoutButton />}
