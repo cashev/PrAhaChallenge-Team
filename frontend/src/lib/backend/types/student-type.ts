@@ -13,13 +13,13 @@ export interface StudentList {
   FirstName: string
   LastName: string
   Status: string
-  SuspensionStartDate: string | null
-  SuspensionEndDate: string | null
-  WithdrawalDate: string | null
-  SeasonID: number | null
-  SeasonNumber: number | null
-  TeamID: number | null
-  TeamName: string | null
+  SuspensionStartDate: string | undefined
+  SuspensionEndDate: string | undefined
+  WithdrawalDate: string | undefined
+  SeasonID: number | undefined
+  SeasonNumber: number | undefined
+  TeamID: number | undefined
+  TeamName: string | undefined
 }
 
 export interface StudentsResponse {
