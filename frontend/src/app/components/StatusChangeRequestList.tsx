@@ -1,7 +1,8 @@
 'use client'
 
 import type { StatusChangeRequest } from '@/lib/backend/types/contact-type'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface StatusChangeRequestListProps {
   unprocessedRequests: StatusChangeRequest[]
@@ -12,7 +13,27 @@ export default function StatusChangeRequestList({
   unprocessedRequests,
   processedRequests,
 }: StatusChangeRequestListProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<'未対応' | '対応済み'>('未対応')
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === '対応済み') {
+      setActiveTab('対応済み')
+    }
+  }, [searchParams])
+
+  const handleTabChange = (tab: '未対応' | '対応済み') => {
+    setActiveTab(tab)
+    const params = new URLSearchParams(searchParams)
+    if (tab === '対応済み') {
+      params.set('tab', '対応済み')
+    } else {
+      params.delete('tab')
+    }
+    router.replace(`/admin/supports?${params.toString()}`)
+  }
 
   const renderRequestTable = (requests: StatusChangeRequest[]) => (
     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -89,7 +110,7 @@ export default function StatusChangeRequestList({
                   ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500'
                   : 'border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300'
               }`}
-              onClick={() => setActiveTab('未対応')}
+              onClick={() => handleTabChange('未対応')}
             >
               未対応 ({unprocessedRequests.length})
             </button>
@@ -101,7 +122,7 @@ export default function StatusChangeRequestList({
                   ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500'
                   : 'border-transparent hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300'
               }`}
-              onClick={() => setActiveTab('対応済み')}
+              onClick={() => handleTabChange('対応済み')}
             >
               対応済み ({processedRequests.length})
             </button>

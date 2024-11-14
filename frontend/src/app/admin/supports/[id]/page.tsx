@@ -14,6 +14,11 @@ export default async function StatusChangeRequestDetailPage({
   const requestId = parseInt(params.id)
   const request = await getStatusChangeRequest(requestId)
 
+  const backUrl =
+    request.Status === '対応済'
+      ? '/admin/supports?tab=対応済み'
+      : '/admin/supports'
+
   const handleProcess = async () => {
     'use server'
     await processStatusChangeRequest(requestId)
@@ -28,7 +33,7 @@ export default async function StatusChangeRequestDetailPage({
           問い合わせ詳細
         </h1>
         <Link
-          href="/admin/supports"
+          href={backUrl}
           className="rounded-md bg-gray-100 px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
         >
           一覧へ戻る
@@ -42,14 +47,18 @@ export default async function StatusChangeRequestDetailPage({
               受講生情報
             </h2>
             <div className="mt-2 space-y-2">
-              <p className="text-gray-700 dark:text-gray-300">
-                <span className="font-semibold">期：</span>
-                {request.Season}期
-              </p>
-              <p className="text-gray-700 dark:text-gray-300">
-                <span className="font-semibold">チーム：</span>
-                {request.TeamName}
-              </p>
+              {request.Season !== 0 && (
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold">期：</span>
+                  {request.Season}期
+                </p>
+              )}
+              {request.TeamName && (
+                <p className="text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold">チーム：</span>
+                  {request.TeamName}
+                </p>
+              )}
               <p className="text-gray-700 dark:text-gray-300">
                 <span className="font-semibold">名前：</span>
                 {request.StudentName}
