@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -26,6 +27,7 @@ func main() {
 func clearDatabase(db *gorm.DB) {
 	// 各テーブルのデータを削除
 	db.Transaction(func(tx *gorm.DB) error {
+		tx.Unscoped().Where("1 = 1").Delete(&models.StudentStatusChangeRequest{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.TaskProgress{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.TeamStudent{})
 		tx.Unscoped().Where("1 = 1").Delete(&models.GenreTask{})
@@ -121,28 +123,84 @@ func createSeasonAndTeam(db *gorm.DB) {
 			StudentID: student.ID,
 		}
 		db.Create(&teamStudent)
+		if i%10 == 0 {
+			if (i/10)%2 == 0 {
+				studentStatusChangeRequests := models.StudentStatusChangeRequest{
+					SubmittedDate: time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Local).Add(time.Duration(rand.Intn(int(time.Since(time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Local)).Hours()))) * time.Hour),
+					StudentID:     student.ID,
+					Type:          "退会",
+					RequestDate:   time.Date(time.Now().Year(), time.Now().Month()+1, 1, 0, 0, 0, 0, time.Local),
+					Reason:        "退会を希望します。: " + students[i].first + " " + students[i].last,
+					Status:        "未対応",
+				}
+				db.Create(&studentStatusChangeRequests)
+			} else {
+				studentStatusChangeRequests := models.StudentStatusChangeRequest{
+					SubmittedDate: time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Local).Add(time.Duration(rand.Intn(int(time.Since(time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Local)).Hours()))) * time.Hour),
+					StudentID:     student.ID,
+					Type:          "退会",
+					RequestDate:   time.Date(time.Now().Year(), time.Now().Month()+1, 0, 0, 0, 0, 0, time.Local),
+					Reason:        "退会を希望します。: " + students[i].first + " " + students[i].last,
+					Status:        "未対応",
+				}
+				db.Create(&studentStatusChangeRequests)
+			}
+		}
 	}
 
 	// 休会中の受講生を27人作成
 	for i := 81; i < 108; i++ {
+		now := time.Now()
+		startDate := time.Date(now.Year(), now.Month()-2, 1, 0, 0, 0, 0, time.Local)
+		endDate := time.Date(now.Year(), now.Month()-1, 0, 23, 59, 59, 999999999, time.Local)
+		diffDays := int(endDate.Sub(startDate).Hours() / 24)
+		submittedDate := startDate.Add(time.Duration(rand.Intn(diffDays)) * 24 * time.Hour).Add(time.Duration(rand.Intn(24)) * time.Hour).Add(time.Duration(rand.Intn(60)) * time.Minute).Add(time.Duration(rand.Intn(60)) * time.Second)
+		requestDate := time.Date(submittedDate.Year(), submittedDate.Month()+1, 1, 0, 0, 0, 0, time.Local)
+		processedDate := submittedDate.Add(time.Duration(rand.Intn(2)+2) * 24 * time.Hour)
 		student := models.Student{
-			FirstName: students[i].first,
-			LastName:  students[i].last,
-			Email:     students[i].email,
-			Status:    "休会中",
+			FirstName:           students[i].first,
+			LastName:            students[i].last,
+			Email:               students[i].email,
+			Status:              "休会中",
+			SuspensionStartDate: requestDate,
+			SuspensionEndDate:   time.Date(requestDate.Year(), requestDate.Month()+3, 0, 0, 0, 0, 0, time.Local),
 		}
 		db.Create(&student)
+		studentStatusChangeRequests := models.StudentStatusChangeRequest{
+			SubmittedDate: submittedDate,
+			StudentID:     student.ID,
+			Type:          "休会",
+			RequestDate:   requestDate,
+			Reason:        "休会を希望します。: " + students[i].first + " " + students[i].last,
+			Status:        "対応済",
+			ProcessedDate: processedDate,
+		}
+		db.Create(&studentStatusChangeRequests)
 	}
 
 	// 退会済みの受講生を12人作成
 	for i := 108; i < 120; i++ {
+		submittedDate := time.Date(2024, time.Month(rand.Intn(10)+1), rand.Intn(30)+1, rand.Intn(24), rand.Intn(60), rand.Intn(60), 0, time.Local)
+		requestDate := time.Date(submittedDate.Year(), submittedDate.Month()+1, 0, 0, 0, 0, 0, time.Local)
+		processedDate := submittedDate.Add(time.Duration(rand.Intn(2)+2) * 24 * time.Hour)
 		student := models.Student{
-			FirstName: students[i].first,
-			LastName:  students[i].last,
-			Email:     students[i].email,
-			Status:    "退会済",
+			FirstName:      students[i].first,
+			LastName:       students[i].last,
+			Email:          students[i].email,
+			Status:         "退会済",
+			WithdrawalDate: requestDate,
 		}
 		db.Create(&student)
+		studentStatusChangeRequests := models.StudentStatusChangeRequest{
+			SubmittedDate: submittedDate,
+			StudentID:     student.ID,
+			Type:          "退会",
+			RequestDate:   requestDate,
+			Reason:        "退会を希望します。: " + students[i].first + " " + students[i].last,
+			Status:        "対応済",
+			ProcessedDate: processedDate,
+		}
+		db.Create(&studentStatusChangeRequests)
 	}
 }
 

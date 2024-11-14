@@ -3,6 +3,7 @@ import {
   getProcessedStatusChangeRequests,
   getUnprocessedStatusChangeRequests,
 } from '@/lib/backend/contact'
+import { Suspense } from 'react'
 
 export default async function ContactsPage() {
   const unprocessedRequests = await getUnprocessedStatusChangeRequests()
@@ -15,10 +16,12 @@ export default async function ContactsPage() {
       </h1>
       <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
         <div className="px-4 py-5 sm:p-6">
-          <StatusChangeRequestList
-            unprocessedRequests={unprocessedRequests}
-            processedRequests={processedRequests}
-          />
+          <Suspense fallback={<div>読み込み中...</div>}>
+            <StatusChangeRequestList
+              unprocessedRequests={unprocessedRequests}
+              processedRequests={processedRequests}
+            />
+          </Suspense>
         </div>
       </div>
     </div>
