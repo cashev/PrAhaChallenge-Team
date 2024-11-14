@@ -1,6 +1,7 @@
 'use client'
 
 import { PAGINATION } from '@/consts/pagination'
+import { STATUSES } from '@/consts/student'
 import type { StudentList } from '@/lib/backend/types/student-type'
 import { ArrowLongDownIcon, ArrowLongUpIcon } from '@heroicons/react/16/solid'
 import debounce from 'lodash.debounce'
@@ -15,8 +16,6 @@ interface StudentTableProps {
   totalCount: number
   searchParams: URLSearchParams
 }
-
-const statuses = ['受講中', '休会中', '退会済']
 
 const StudentTable: React.FC<StudentTableProps> = ({
   students,
@@ -315,7 +314,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
                   className="w-11/12 rounded border border-gray-300 bg-gray-100 p-2 text-xs text-gray-600"
                 >
                   <option value="">全て</option>
-                  {statuses.map((status) => (
+                  {STATUSES.map((status) => (
                     <option key={status} value={status}>
                       {status}
                     </option>
