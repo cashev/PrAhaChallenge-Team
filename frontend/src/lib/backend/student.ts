@@ -1,4 +1,5 @@
 import type {
+  Student,
   StudentInfoResponse,
   StudentsResponse,
 } from './types/student-type'
@@ -40,5 +41,23 @@ export const getStudents = async (
       students: [],
       totalCount: 0,
     }
+  }
+}
+
+export async function updateStudent(student: Student): Promise<void> {
+  const response = await fetch(
+    `${process.env.BACKEND_URL}/students/${student.StudentID}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(student),
+    },
+  )
+
+  if (!response.ok) {
+    const errorMessage = await response.text()
+    throw new Error(errorMessage || '更新に失敗しました')
   }
 }
