@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type StudentList struct {
+type Student struct {
 	ID                  uint       `json:"StudentID"`
 	FirstName           string     `json:"FirstName"`
 	LastName            string     `json:"LastName"`
@@ -28,8 +29,8 @@ type StudentList struct {
 }
 
 type StudentsResponse struct {
-	Students   []StudentList `json:"students"`
-	TotalCount int64         `json:"totalCount"`
+	Students   []Student `json:"students"`
+	TotalCount int64     `json:"totalCount"`
 }
 
 type StudentInfoResponse struct {
@@ -40,6 +41,17 @@ type StudentInfoResponse struct {
 	TeamName  string `json:"TeamName"`
 	FirstName string `json:"FirstName"`
 	LastName  string `json:"LastName"`
+}
+
+type UpdateStudentRequest struct {
+	ID                  uint    `json:"StudentID"`
+	FirstName           string  `json:"FirstName"`
+	LastName            string  `json:"LastName"`
+	Status              string  `json:"Status"`
+	SuspensionStartDate *string `json:"SuspensionStartDate"`
+	SuspensionEndDate   *string `json:"SuspensionEndDate"`
+	WithdrawalDate      *string `json:"WithdrawalDate"`
+	TeamID              *uint   `json:"TeamID"`
 }
 
 func getFilters(c *gin.Context) map[string]string {
@@ -121,7 +133,7 @@ func buildStudentQuery(db *gorm.DB, filters map[string]string) *gorm.DB {
 }
 
 func GetStudents(c *gin.Context) {
-	var studentList []StudentList
+	var studentList []Student
 	var totalCount int64
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -152,7 +164,7 @@ func GetStudents(c *gin.Context) {
 
 	if len(studentList) == 0 {
 		c.JSON(http.StatusOK, gin.H{
-			"students":   []StudentList{},
+			"students":   []Student{},
 			"totalCount": totalCount,
 		})
 		return
@@ -201,6 +213,111 @@ func GetStudentInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, studentInfo)
 }
 
+func UpdateStudent(c *gin.Context) {
+	var request UpdateStudentRequest
+	id := c.Param("id")
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Println("Error occurred:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx := database.DB.Begin()
+
+	var student models.Student
+	if err := tx.First(&student, id).Error; err != nil {
+		tx.Rollback()
+		log.Println("Error occurred:", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "受講生が見つかりません"})
+		return
+	}
+
+	updates := models.Student{}
+	updates.FirstName = request.FirstName
+	updates.LastName = request.LastName
+	updates.Status = request.Status
+
+	if request.SuspensionStartDate != nil {
+		SuspensionStartDate, _ := time.Parse("2006-01-02", *request.SuspensionStartDate)
+		updates.SuspensionStartDate = &SuspensionStartDate
+	} else {
+		updates.SuspensionStartDate = nil
+	}
+
+	if request.SuspensionEndDate != nil {
+		SuspensionEndDate, _ := time.Parse("2006-01-02", *request.SuspensionEndDate)
+		updates.SuspensionEndDate = &SuspensionEndDate
+	} else {
+		updates.SuspensionEndDate = nil
+	}
+
+	if request.WithdrawalDate != nil {
+		WithdrawalDate, _ := time.Parse("2006-01-02", *request.WithdrawalDate)
+		updates.WithdrawalDate = &WithdrawalDate
+	} else {
+		updates.WithdrawalDate = nil
+	}
+
+	if err := tx.Model(&student).
+		Select("first_name", "last_name", "status", "suspension_start_date", "suspension_end_date", "withdrawal_date").
+		Updates(updates).Error; err != nil {
+		tx.Rollback()
+		log.Printf("Update error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "受講生の更新に失敗しました"})
+		return
+	}
+
+	// TeamIDが提供された場合、TeamStudentを更新または作成
+	if request.TeamID != nil {
+		var teamStudent models.TeamStudent
+		err := tx.Where("student_id = ?", student.ID).First(&teamStudent).Error
+
+		if err == gorm.ErrRecordNotFound {
+			// 存在しない場合、新しいTeamStudentを作成
+			teamStudent = models.TeamStudent{
+				StudentID: student.ID,
+				TeamID:    *request.TeamID,
+			}
+			if err := tx.Create(&teamStudent).Error; err != nil {
+				tx.Rollback()
+				log.Println("Error occurred:", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "TeamStudentの作成に失敗しました"})
+				return
+			}
+		} else if err == nil {
+			// 存在する場合、TeamIDを更新
+			teamStudent.TeamID = *request.TeamID
+			if err := tx.Save(&teamStudent).Error; err != nil {
+				tx.Rollback()
+				log.Println("Error occurred:", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "TeamStudentの更新に失敗しました"})
+				return
+			}
+		} else {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "TeamStudentの検索に失敗しました"})
+			return
+		}
+	} else {
+		log.Println(student.ID)
+		// TeamIDが提供されていない場合、TeamStudentを削除
+		if err := tx.Unscoped().Where("student_id = ?", student.ID).Delete(&models.TeamStudent{}).Error; err != nil {
+			tx.Rollback()
+			log.Println("Error occurred:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "TeamStudentの削除に失敗しました"})
+			return
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "トランザクションのコミットに失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "受講生が正常に更新されました"})
+}
+
 type RegisterRequest struct {
 	SeasonNumber uint           `json:"SeasonNumber"`
 	Teams        []RegisterTeam `json:"Teams"`
@@ -219,9 +336,6 @@ type RegisterStudent struct {
 func RegisterStudents(c *gin.Context) {
 	var request RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 

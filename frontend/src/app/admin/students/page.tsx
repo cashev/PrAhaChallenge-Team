@@ -8,6 +8,7 @@ import { Suspense, useEffect, useState } from 'react'
 
 function StudentsPageContent() {
   const searchParams = useSearchParams()
+  const [updateTrigger, setUpdateTrigger] = useState(0)
   const [studentsData, setStudentsData] = useState<StudentsResponse>({
     students: [],
     totalCount: 0,
@@ -20,7 +21,11 @@ function StudentsPageContent() {
       setStudentsData(response)
     }
     fetchStudents()
-  }, [searchParams])
+  }, [searchParams, updateTrigger])
+
+  const handleDataUpdate = () => {
+    setUpdateTrigger((prev) => prev + 1)
+  }
 
   return (
     <div className="mx-auto max-w-7xl py-8">
@@ -39,6 +44,7 @@ function StudentsPageContent() {
         students={studentsData.students}
         totalCount={studentsData.totalCount}
         searchParams={searchParams}
+        onDataUpdate={handleDataUpdate}
       />
     </div>
   )

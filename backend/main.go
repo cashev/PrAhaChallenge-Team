@@ -41,7 +41,7 @@ func setupRouter() *gin.Engine {
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		AllowCredentials: true,
 	}))
@@ -50,7 +50,10 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/students", controller.GetStudents)
 	r.GET("/students/:id", controller.GetStudentInfo)
+	r.PATCH("/students/:id", controller.UpdateStudent)
 	r.POST("/students/register", controller.RegisterStudents)
+
+	r.GET("/teams", controller.GetTeams)
 
 	r.GET("/tasks", controller.GetTasks)
 	r.POST("/tasks", controller.CreateTask)

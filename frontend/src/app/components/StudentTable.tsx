@@ -2,7 +2,7 @@
 
 import { PAGINATION } from '@/consts/pagination'
 import { STATUSES } from '@/consts/student'
-import type { StudentList } from '@/lib/backend/types/student-type'
+import type { Student } from '@/lib/backend/types/student-type'
 import { ArrowLongDownIcon, ArrowLongUpIcon } from '@heroicons/react/16/solid'
 import debounce from 'lodash.debounce'
 import { usePathname, useRouter } from 'next/navigation'
@@ -12,15 +12,17 @@ import Pagination from './Pagination'
 import StudentRow from './StudentRow'
 
 interface StudentTableProps {
-  students: StudentList[]
+  students: Student[]
   totalCount: number
   searchParams: URLSearchParams
+  onDataUpdate: () => void
 }
 
 const StudentTable: React.FC<StudentTableProps> = ({
   students,
   totalCount,
   searchParams,
+  onDataUpdate,
 }) => {
   const pathname = usePathname()
   const { replace } = useRouter()
@@ -353,7 +355,11 @@ const StudentTable: React.FC<StudentTableProps> = ({
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
             {students.length > 0
               ? students.map((student) => (
-                  <StudentRow key={student.StudentID} student={student} />
+                  <StudentRow
+                    key={student.StudentID}
+                    student={student}
+                    onDataUpdate={onDataUpdate}
+                  />
                 ))
               : null}
           </tbody>
