@@ -121,8 +121,11 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          理由
+          理由（任意）
         </label>
+        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+          今後の運営のために理由をお聞かせください。
+        </p>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
