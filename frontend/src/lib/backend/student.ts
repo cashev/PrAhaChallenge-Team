@@ -1,4 +1,5 @@
 import type {
+  RegisterRequest,
   StudentInfoResponse,
   StudentsResponse,
 } from './types/student-type'
@@ -41,4 +42,15 @@ export const getStudents = async (
       totalCount: 0,
     }
   }
+}
+
+export const registerStudents = async (
+  request: RegisterRequest,
+): Promise<string> => {
+  const response = await fetch(`${process.env.BACKEND_URL}/students/register`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  })
+  const { message } = await response.json()
+  return message
 }

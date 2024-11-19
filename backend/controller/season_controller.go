@@ -26,3 +26,17 @@ func GetSeasons(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"seasons": response})
 }
+
+func GetNextSeasonNumber(c *gin.Context) {
+	var seasons []models.Season
+	if err := database.DB.Order("Number DESC").Find(&seasons).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	nextNumber := 1
+	if len(seasons) > 0 {
+		nextNumber = int(seasons[0].Number) + 1
+	}
+	c.JSON(http.StatusOK, gin.H{"nextNumber": nextNumber})
+}

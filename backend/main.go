@@ -50,6 +50,7 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/students", controller.GetStudents)
 	r.GET("/students/:id", controller.GetStudentInfo)
+	r.POST("/students/register", controller.RegisterStudents)
 
 	r.GET("/tasks", controller.GetTasks)
 	r.POST("/tasks", controller.CreateTask)
@@ -71,6 +72,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/progress/:season", controller.GetTasksAndProgressBySeason)
 
 	r.GET("/seasons", controller.GetSeasons)
+	r.GET("/seasons/next-number", controller.GetNextSeasonNumber)
 
 	r.GET("/status-change-requests/:id", controller.GetStatusChangeRequest)
 	r.GET("/status-change-requests/unprocessed", controller.GetUnprocessedStatusChangeRequests)

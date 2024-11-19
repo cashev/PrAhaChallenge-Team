@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -198,4 +199,129 @@ func GetStudentInfo(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, studentInfo)
+}
+
+type RegisterRequest struct {
+	SeasonNumber uint           `json:"SeasonNumber"`
+	Teams        []RegisterTeam `json:"Teams"`
+}
+
+type RegisterTeam struct {
+	TeamName string            `json:"TeamName"`
+	Students []RegisterStudent `json:"Students"`
+}
+
+type RegisterStudent struct {
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
+}
+
+func RegisterStudents(c *gin.Context) {
+	var request RegisterRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+
+		season := models.Season{
+			Number: request.SeasonNumber,
+		}
+		if err := tx.Create(&season).Error; err != nil {
+			return err
+		}
+		teams := []models.Team{}
+		for _, team := range request.Teams {
+			teams = append(teams, models.Team{
+				Name: team.TeamName,
+			})
+		}
+		if err := tx.Create(&teams).Error; err != nil {
+			return err
+		}
+		seasonTeams := []models.SeasonTeam{}
+		for _, team := range teams {
+			seasonTeams = append(seasonTeams, models.SeasonTeam{
+				SeasonID: season.ID,
+				TeamID:   team.ID,
+			})
+		}
+		if err := tx.Create(&seasonTeams).Error; err != nil {
+			return err
+		}
+
+		students := []models.Student{}
+		studentTeams := []models.TeamStudent{}
+		for i, reqTeam := range request.Teams {
+			for _, student := range reqTeam.Students {
+				newStudent := models.Student{
+					FirstName: student.FirstName,
+					LastName:  student.LastName,
+					Email:     fmt.Sprintf("%s.%s@example.com", student.FirstName, student.LastName),
+					Status:    "受講中",
+				}
+				students = append(students, newStudent)
+				studentTeams = append(studentTeams, models.TeamStudent{
+					TeamID: teams[i].ID,
+				})
+			}
+		}
+		if err := tx.Create(&students).Error; err != nil {
+			return err
+		}
+
+		// 作成したStudentのIDをTeamStudentに設定
+		for i, student := range students {
+			studentTeams[i].StudentID = student.ID
+		}
+		if err := tx.Create(&studentTeams).Error; err != nil {
+			return err
+		}
+
+		var tasks []models.Task
+		if err := tx.Find(&tasks).Error; err != nil {
+			return err
+		}
+		taskProgresses := []models.TaskProgress{}
+		for _, task := range tasks {
+			for _, student := range students {
+				taskProgresses = append(taskProgresses, models.TaskProgress{
+					TaskID:    task.ID,
+					StudentID: student.ID,
+					Status:    "未着手",
+				})
+			}
+		}
+		if err := tx.Create(&taskProgresses).Error; err != nil {
+			return err
+		}
+
+		var genres []models.Genre
+		if err := tx.Find(&genres).Error; err != nil {
+			return err
+		}
+		genrePublications := []models.GenrePublication{}
+		for i, genre := range genres {
+			for _, team := range teams {
+				genrePublications = append(genrePublications, models.GenrePublication{
+					GenreID:     genre.ID,
+					SeasonID:    season.ID,
+					TeamID:      team.ID,
+					IsPublished: i == 0,
+				})
+			}
+		}
+		if err := tx.Create(&genrePublications).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Students registered successfully"})
 }
