@@ -51,6 +51,9 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
   const [type, setType] = useState<StatusChangeType>('休会')
   const [reason, setReason] = useState('')
   const [requestDate, setRequestDate] = useState<Date>(new Date())
+  const [suspensionPeriod, setSuspensionPeriod] = useState<number | undefined>(
+    undefined,
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [availableDates, setAvailableDates] = useState<Date[]>([])
@@ -59,6 +62,11 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
     const dates = getAvailableDates(type)
     setAvailableDates(dates)
     setRequestDate(dates[0])
+    if (type === '休会') {
+      setSuspensionPeriod(1)
+    } else {
+      setSuspensionPeriod(undefined)
+    }
   }, [type])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -118,6 +126,23 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
           ))}
         </select>
       </div>
+
+      {type === '休会' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            休会期間
+          </label>
+          <select
+            value={suspensionPeriod || 1}
+            onChange={(e) => setSuspensionPeriod(Number(e.target.value))}
+            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          >
+            <option value="1">1ヶ月</option>
+            <option value="2">2ヶ月</option>
+            <option value="3">3ヶ月</option>
+          </select>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">

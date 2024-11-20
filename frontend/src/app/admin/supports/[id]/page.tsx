@@ -93,6 +93,11 @@ export default async function StatusChangeRequestDetailPage({
                   day: 'numeric',
                 })}
               </p>
+              <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-semibold">休会期間：</span>
+                {request.SuspensionPeriod !== null &&
+                  `${request.SuspensionPeriod}ヶ月`}
+              </p>
               <div>
                 <p className="font-semibold text-gray-700 dark:text-gray-300">
                   理由：
