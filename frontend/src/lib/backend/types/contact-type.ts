@@ -14,6 +14,7 @@ export interface StatusChangeRequest {
   Status: StatusChangeRequestStatus
   Reason: string
   RequestDate: Date
+  SuspensionPeriod: number
   SubmittedDate: Date
   ProcessedDate: Date
 }

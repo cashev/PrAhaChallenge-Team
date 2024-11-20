@@ -6,6 +6,7 @@ export const submitStatusChangeRequest = async (
   type: '休会' | '退会',
   reason: string,
   requestDate: Date,
+  suspensionPeriod?: number,
 ) => {
   // 日付の時刻部分を0時0分0秒に設定
   const normalizedDate = new Date(requestDate)
@@ -23,6 +24,7 @@ export const submitStatusChangeRequest = async (
         Type: type,
         Reason: reason,
         RequestDate: normalizedDate,
+        SuspensionPeriod: suspensionPeriod,
       }),
     },
   )

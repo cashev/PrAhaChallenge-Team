@@ -15,6 +15,7 @@ export default async function StatusChangePage() {
     type: '休会' | '退会',
     reason: string,
     requestDate: Date,
+    suspensionPeriod?: number,
   ) {
     'use server'
     const session = await getServerSession(authOptions)
@@ -28,6 +29,7 @@ export default async function StatusChangePage() {
       type,
       reason,
       requestDate,
+      Number(suspensionPeriod),
     )
   }
 

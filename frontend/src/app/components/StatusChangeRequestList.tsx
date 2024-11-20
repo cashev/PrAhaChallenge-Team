@@ -52,6 +52,9 @@ export default function StatusChangeRequestList({
             希望日
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+            休会期間
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
             理由
           </th>
         </tr>
@@ -87,6 +90,10 @@ export default function StatusChangeRequestList({
                   month: 'long',
                   day: 'numeric',
                 })}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                {request.SuspensionPeriod !== null &&
+                  `${request.SuspensionPeriod}ヶ月`}
               </td>
               <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
                 {request.Reason.length > 20

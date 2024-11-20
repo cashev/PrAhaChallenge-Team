@@ -336,6 +336,9 @@ type RegisterStudent struct {
 func RegisterStudents(c *gin.Context) {
 	var request RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 
