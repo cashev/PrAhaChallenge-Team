@@ -157,13 +157,14 @@ func createSeasonAndTeam(db *gorm.DB) {
 		submittedDate := startDate.Add(time.Duration(rand.Intn(diffDays)) * 24 * time.Hour).Add(time.Duration(rand.Intn(24)) * time.Hour).Add(time.Duration(rand.Intn(60)) * time.Minute).Add(time.Duration(rand.Intn(60)) * time.Second)
 		requestDate := time.Date(submittedDate.Year(), submittedDate.Month()+1, 1, 0, 0, 0, 0, time.Local)
 		processedDate := submittedDate.Add(time.Duration(rand.Intn(2)+2) * 24 * time.Hour)
+		suspensionEndDate := time.Date(requestDate.Year(), requestDate.Month()+3, 0, 0, 0, 0, 0, time.Local)
 		student := models.Student{
 			FirstName:           students[i].first,
 			LastName:            students[i].last,
 			Email:               students[i].email,
 			Status:              "休会中",
-			SuspensionStartDate: requestDate,
-			SuspensionEndDate:   time.Date(requestDate.Year(), requestDate.Month()+3, 0, 0, 0, 0, 0, time.Local),
+			SuspensionStartDate: &requestDate,
+			SuspensionEndDate:   &suspensionEndDate,
 		}
 		db.Create(&student)
 		studentStatusChangeRequests := models.StudentStatusChangeRequest{
@@ -188,7 +189,7 @@ func createSeasonAndTeam(db *gorm.DB) {
 			LastName:       students[i].last,
 			Email:          students[i].email,
 			Status:         "退会済",
-			WithdrawalDate: requestDate,
+			WithdrawalDate: &requestDate,
 		}
 		db.Create(&student)
 		studentStatusChangeRequests := models.StudentStatusChangeRequest{
