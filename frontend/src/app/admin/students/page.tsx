@@ -33,6 +33,12 @@ function StudentsPageContent() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           受講生一覧
         </h1>
+        <a
+          href="/admin/students/register"
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+        >
+          一括登録
+        </a>
       </div>
       <StudentTable
         students={studentsData.students}

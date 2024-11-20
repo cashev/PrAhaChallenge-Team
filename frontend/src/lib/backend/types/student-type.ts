@@ -26,3 +26,18 @@ export interface StudentsResponse {
   students: Student[]
   totalCount: number
 }
+
+export interface RegisterRequest {
+  SeasonNumber: number
+  Teams: RegisterTeam[]
+}
+
+export interface RegisterTeam {
+  TeamName: string
+  Students: RegisterStudent[]
+}
+
+export interface RegisterStudent {
+  FirstName: string
+  LastName: string
+}
