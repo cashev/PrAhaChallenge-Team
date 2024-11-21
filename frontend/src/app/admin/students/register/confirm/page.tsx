@@ -21,20 +21,28 @@ export default async function ConfirmPage({
   const nextSeasonNumber = await getNextSeasonNumber()
 
   async function handleSubmit(
-    assignments: { firstName: string; lastName: string; teamName?: string }[],
+    assignments: {
+      firstName: string
+      lastName: string
+      email: string
+      teamName: string
+    }[],
   ) {
     'use server'
 
     const groupedStudents = assignments.reduce(
       (acc, student) => {
-        const teamName = student.teamName || '未所属'
+        const teamName = student.teamName
         if (!acc[teamName]) {
           acc[teamName] = []
         }
         acc[teamName].push(student)
         return acc
       },
-      {} as Record<string, { firstName: string; lastName: string }[]>,
+      {} as Record<
+        string,
+        { firstName: string; lastName: string; email: string }[]
+      >,
     )
 
     const teams = Object.entries(groupedStudents).map(
@@ -43,6 +51,7 @@ export default async function ConfirmPage({
         Students: students.map((student) => ({
           FirstName: student.firstName,
           LastName: student.lastName,
+          Email: student.email,
         })),
       }),
     )
@@ -56,7 +65,12 @@ export default async function ConfirmPage({
   }
 
   async function handleBack(
-    assignments: { firstName: string; lastName: string; teamName?: string }[],
+    assignments: {
+      firstName: string
+      lastName: string
+      email: string
+      teamName: string
+    }[],
   ) {
     'use server'
     const storeId = temporaryStore.setStudents(assignments)

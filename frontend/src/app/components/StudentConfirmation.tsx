@@ -3,7 +3,8 @@
 interface Student {
   firstName: string
   lastName: string
-  teamName?: string
+  email: string
+  teamName: string
 }
 
 interface StudentConfirmationProps {
@@ -52,6 +53,9 @@ export default function StudentConfirmation({
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
                     名前
                   </th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                    メールアドレス
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -72,6 +76,9 @@ export default function StudentConfirmation({
                         )}
                         <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
                           {student.lastName} {student.firstName}
+                        </td>
+                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                          {student.email}
                         </td>
                       </tr>
                     )),

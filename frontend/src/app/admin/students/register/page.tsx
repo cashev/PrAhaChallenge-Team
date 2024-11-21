@@ -3,19 +3,20 @@ import { temporaryStore } from '@/util/temporary-store'
 import { redirect } from 'next/navigation'
 
 export default function RegisterStudentsPage() {
-  async function handleSubmit(names: string) {
+  async function handleSubmit(input: string) {
     'use server'
-    const students = names
+    const students = input
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line !== '')
       .map((line) => {
-        const [firstName, lastName] = line.split(' ')
-        return { firstName, lastName }
+        const [nameInfo, email, teamName] = line.split('\t')
+        const [firstName, lastName] = nameInfo.split(' ')
+        return { firstName, lastName, email, teamName }
       })
 
     if (students.length === 0) {
-      throw new Error('受講生の名前を入力してください')
+      throw new Error('受講生の情報を入力してください')
     }
 
     // セッションストレージに一時保存

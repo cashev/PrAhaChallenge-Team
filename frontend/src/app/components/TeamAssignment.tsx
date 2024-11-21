@@ -3,16 +3,20 @@
 import type React from 'react'
 import { useState } from 'react'
 
-interface Student {
-  firstName: string
-  lastName: string
-  teamName?: string
-}
-
 interface TeamAssignmentProps {
-  students: Student[]
+  students: {
+    firstName: string
+    lastName: string
+    email: string
+    teamName: string
+  }[]
   onSubmit: (
-    assignments: { firstName: string; lastName: string; teamName: string }[],
+    assignments: {
+      firstName: string
+      lastName: string
+      email: string
+      teamName: string
+    }[],
   ) => Promise<void>
 }
 
@@ -20,13 +24,30 @@ export default function TeamAssignment({
   students,
   onSubmit,
 }: TeamAssignmentProps) {
-  const [assignments, setAssignments] = useState(
-    students.map((student) => ({
-      ...student,
-      teamName: student.teamName || '',
-    })),
-  )
+  const [assignments, setAssignments] = useState(students)
   const [error, setError] = useState<string | null>(null)
+
+  const handleChange = (
+    index: number,
+    field: 'name' | 'email' | 'teamName',
+    value: string,
+  ) => {
+    const newAssignments = [...assignments]
+    if (field === 'name') {
+      const [firstName, lastName] = value.split(' ')
+      newAssignments[index] = {
+        ...newAssignments[index],
+        firstName: firstName || '',
+        lastName: lastName || '',
+      }
+    } else {
+      newAssignments[index] = {
+        ...newAssignments[index],
+        [field]: value,
+      }
+    }
+    setAssignments(newAssignments)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,7 +70,7 @@ export default function TeamAssignment({
 
     if (singleMemberTeams.length > 0) {
       setError(
-        `以下のチームは1人しか所属していません：${singleMemberTeams.join(', ')}`,
+        `1人のみ所属しているチームがあります：${singleMemberTeams.join(', ')}`,
       )
       return
     }
@@ -58,41 +79,65 @@ export default function TeamAssignment({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/30">
-          <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
-        </div>
-      )}
-      {assignments.map((assignment, index) => (
-        <div key={index} className="flex items-center space-x-4">
-          <div className="w-48">
-            <span className="text-gray-700 dark:text-gray-300">
-              {assignment.lastName} {assignment.firstName}
-            </span>
+    <form onSubmit={handleSubmit}>
+      <div className="space-y-4">
+        {assignments.map((student, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-3 gap-4 rounded-lg border p-4"
+          >
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                名前
+              </label>
+              <input
+                type="text"
+                value={`${student.firstName} ${student.lastName}`}
+                onChange={(e) => handleChange(index, 'name', e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                placeholder="山田 太郎"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                メールアドレス
+              </label>
+              <input
+                type="email"
+                value={student.email}
+                onChange={(e) => handleChange(index, 'email', e.target.value)}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                チーム名
+              </label>
+              <input
+                type="text"
+                value={student.teamName}
+                onChange={(e) =>
+                  handleChange(index, 'teamName', e.target.value)
+                }
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+              />
+            </div>
           </div>
-          <div className="flex-1">
-            <input
-              type="text"
-              value={assignment.teamName}
-              onChange={(e) => {
-                const newAssignments = [...assignments]
-                newAssignments[index].teamName = e.target.value
-                setAssignments(newAssignments)
-              }}
-              placeholder="チーム名"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-              required
-            />
-          </div>
+        ))}
+      </div>
+      <div className="mt-4">
+        <div className="flex items-center justify-end space-x-4">
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
+          <button
+            type="submit"
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            確認画面へ
+          </button>
         </div>
-      ))}
-      <button
-        type="submit"
-        className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-      >
-        確認画面へ
-      </button>
+      </div>
     </form>
   )
 }

@@ -17,7 +17,12 @@ export default function TeamAssignmentPage({
   }
 
   async function handleSubmit(
-    assignments: { firstName: string; lastName: string; teamName: string }[],
+    assignments: {
+      firstName: string
+      lastName: string
+      email: string
+      teamName: string
+    }[],
   ) {
     'use server'
     const storeId = temporaryStore.setStudents(assignments)

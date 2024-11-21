@@ -4,7 +4,7 @@ import type React from 'react'
 import { useState } from 'react'
 
 interface StudentNameInputProps {
-  onSubmit: (names: string) => Promise<void>
+  onSubmit: (input: string) => Promise<void>
 }
 
 export default function StudentNameInput({ onSubmit }: StudentNameInputProps) {
@@ -27,7 +27,8 @@ export default function StudentNameInput({ onSubmit }: StudentNameInputProps) {
           htmlFor="names"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-          受講生名（FirstName LastName形式で1行に1名）
+          受講生情報（FirstName
+          LastNameとメールアドレスとチーム名をタブ区切りで1行に1名）
         </label>
         <textarea
           id="names"
@@ -35,8 +36,8 @@ export default function StudentNameInput({ onSubmit }: StudentNameInputProps) {
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
           value={names}
           onChange={(e) => setNames(e.target.value)}
-          placeholder={`Taro Yamada
-Hanako Sato`}
+          placeholder={`Taro Yamada\ttaro.yamada@example.com\tA
+Hanako Sato\thanako.sato@example.com\tB`}
         />
       </div>
       {error && (

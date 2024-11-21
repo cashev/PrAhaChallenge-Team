@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -331,6 +330,7 @@ type RegisterTeam struct {
 type RegisterStudent struct {
 	FirstName string `json:"FirstName"`
 	LastName  string `json:"LastName"`
+	Email     string `json:"Email"`
 }
 
 func RegisterStudents(c *gin.Context) {
@@ -375,7 +375,7 @@ func RegisterStudents(c *gin.Context) {
 				newStudent := models.Student{
 					FirstName: student.FirstName,
 					LastName:  student.LastName,
-					Email:     fmt.Sprintf("%s.%s@example.com", student.FirstName, student.LastName),
+					Email:     student.Email,
 					Status:    "受講中",
 				}
 				students = append(students, newStudent)

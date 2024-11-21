@@ -40,4 +40,5 @@ export interface RegisterTeam {
 export interface RegisterStudent {
   FirstName: string
   LastName: string
+  Email: string
 }

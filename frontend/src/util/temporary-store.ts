@@ -1,7 +1,8 @@
 type Student = {
   firstName: string
   lastName: string
-  teamName?: string
+  email: string
+  teamName: string
 }
 
 class TemporaryStore {
