@@ -11,6 +11,7 @@ interface StatusChangeRequestFormProps {
     type: StatusChangeType,
     reason: string,
     requestDate: Date,
+    suspensionPeriod?: number,
   ) => Promise<void>
 }
 
@@ -75,7 +76,7 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
     setError(null)
 
     try {
-      await onSubmit(type, reason, requestDate)
+      await onSubmit(type, reason, requestDate, suspensionPeriod)
       router.push('/student/contact/completion')
     } catch (err) {
       if (err instanceof Error) {
