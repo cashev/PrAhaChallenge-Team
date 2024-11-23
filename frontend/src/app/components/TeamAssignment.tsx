@@ -43,7 +43,7 @@ export default function TeamAssignment({
     } else {
       newAssignments[index] = {
         ...newAssignments[index],
-        [field]: value,
+        [field]: field === 'teamName' ? value.toUpperCase() : value,
       }
     }
     setAssignments(newAssignments)
@@ -113,14 +113,20 @@ export default function TeamAssignment({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 チーム名
               </label>
-              <input
-                type="text"
+              <select
                 value={student.teamName}
                 onChange={(e) =>
                   handleChange(index, 'teamName', e.target.value)
                 }
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
-              />
+              >
+                <option value="">チームを選択</option>
+                {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map((team) => (
+                  <option key={team} value={team}>
+                    {team}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         ))}

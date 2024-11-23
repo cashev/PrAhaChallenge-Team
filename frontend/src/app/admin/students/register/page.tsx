@@ -12,7 +12,7 @@ export default function RegisterStudentsPage() {
       .map((line) => {
         const [nameInfo, email, teamName] = line.split('\t')
         const [firstName, lastName] = nameInfo.split(' ')
-        return { firstName, lastName, email, teamName }
+        return { firstName, lastName, email, teamName: teamName.toUpperCase() }
       })
 
     if (students.length === 0) {
