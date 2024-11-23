@@ -75,7 +75,7 @@ export default function TeamAssignment({
     setError(null)
 
     // 既存の受講生と新規受講生を合わせたチーム所属人数を集計
-    const teamCounts = [...assignments, ...existingStudents].reduce(
+    const teamCounts = [...assignments, ...existingAssignments].reduce(
       (acc, curr) => {
         const teamName = curr.teamName
         acc[teamName] = (acc[teamName] || 0) + 1
@@ -86,9 +86,11 @@ export default function TeamAssignment({
 
     // 1人チームがあるかチェック（新規受講生のチームのみ）
     const singleMemberTeams = Object.entries(teamCounts)
-      .filter(([teamName]) =>
-        // 新規受講生が所属しているチームのみをフィルタリング
-        assignments.some((student) => student.teamName === teamName),
+      .filter(
+        ([teamName]) =>
+          // 新規受講生または既存受講生が所属しているチームのみをフィルタリング
+          assignments.some((student) => student.teamName === teamName) ||
+          existingAssignments.some((student) => student.teamName === teamName),
       )
       .filter(([, count]) => count === 1)
       .map(([teamName]) => teamName)
