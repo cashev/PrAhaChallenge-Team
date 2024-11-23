@@ -88,7 +88,7 @@ func createSeasonAndTeam(db *gorm.DB) {
 
 		// 各期に3つのチームを作成
 		for j := 'A'; j <= 'C'; j++ {
-			team := models.Team{Name: fmt.Sprintf("%d-%c", i, j)}
+			team := models.Team{Name: string(j)}
 			db.Create(&team)
 			teams = append(teams, team)
 
@@ -109,10 +109,13 @@ func createSeasonAndTeam(db *gorm.DB) {
 	// 受講中の学生を作成（各期3チーム、各チーム3人で計81人）
 	for i := 0; i < 81; i++ {
 		student := models.Student{
-			FirstName: students[i].first,
-			LastName:  students[i].last,
-			Email:     students[i].email,
-			Status:    "受講中",
+			FirstName:           students[i].first,
+			LastName:            students[i].last,
+			Email:               students[i].email,
+			Status:              "受講中",
+			SuspensionStartDate: nil,
+			SuspensionEndDate:   nil,
+			WithdrawalDate:      nil,
 		}
 		db.Create(&student)
 		// チームへの振り分け
@@ -165,6 +168,7 @@ func createSeasonAndTeam(db *gorm.DB) {
 			Status:              "休会中",
 			SuspensionStartDate: &requestDate,
 			SuspensionEndDate:   &suspensionEndDate,
+			WithdrawalDate:      nil,
 		}
 		db.Create(&student)
 		studentStatusChangeRequests := models.StudentStatusChangeRequest{
@@ -185,11 +189,13 @@ func createSeasonAndTeam(db *gorm.DB) {
 		requestDate := time.Date(submittedDate.Year(), submittedDate.Month()+1, 0, 0, 0, 0, 0, time.Local)
 		processedDate := submittedDate.Add(time.Duration(rand.Intn(2)+2) * 24 * time.Hour)
 		student := models.Student{
-			FirstName:      students[i].first,
-			LastName:       students[i].last,
-			Email:          students[i].email,
-			Status:         "退会済",
-			WithdrawalDate: &requestDate,
+			FirstName:           students[i].first,
+			LastName:            students[i].last,
+			Email:               students[i].email,
+			Status:              "退会済",
+			SuspensionStartDate: nil,
+			SuspensionEndDate:   nil,
+			WithdrawalDate:      &requestDate,
 		}
 		db.Create(&student)
 		studentStatusChangeRequests := models.StudentStatusChangeRequest{
@@ -265,7 +271,7 @@ func createGenresAndTasks(db *gorm.DB) {
 
 func createGenrePublications(db *gorm.DB) {
 	var seasons []models.Season
-	db.Order("number").Find(&seasons)
+	db.Preload("SeasonTeams").Preload("SeasonTeams.Team").Order("number").Find(&seasons)
 
 	var genres []models.Genre
 	db.Order("display_order").Find(&genres)
@@ -283,16 +289,14 @@ func createGenrePublications(db *gorm.DB) {
 	}
 
 	for _, season := range seasons {
-		for teamLetter := 'A'; teamLetter <= 'C'; teamLetter++ {
-			teamName := fmt.Sprintf("%d-%c", season.Number, teamLetter)
-			var team models.Team
-			db.Where("name = ?", teamName).First(&team)
-
-			count := publicationCounts[teamName]
+		for _, seasonTeam := range season.SeasonTeams {
+			teamName := seasonTeam.Team.Name
+			teamIndex := fmt.Sprintf("%d-%s", season.Number, teamName)
+			count := publicationCounts[teamIndex]
 			for i := 0; i < len(genres); i++ {
 				genrePublication := models.GenrePublication{
 					SeasonID:    season.ID,
-					TeamID:      team.ID,
+					TeamID:      seasonTeam.TeamID,
 					GenreID:     genres[i].ID,
 					IsPublished: i <= count-1,
 				}
