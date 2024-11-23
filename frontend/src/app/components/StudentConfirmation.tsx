@@ -118,7 +118,7 @@ export default function StudentConfirmation({
       'register_assignmentsForNew',
       JSON.stringify(assignmentsForNew),
     )
-    router.push(`/admin/students/register/team?season=${seasonNumber}`)
+    router.push(`/admin/students/register/assign?season=${seasonNumber}`)
   }
 
   return (

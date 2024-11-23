@@ -1,4 +1,4 @@
-import StudentNameInput from '@/app/components/StudentNameInput'
+import StudentNameInput from '@/app/components/StudentInfoInput'
 import { getSeasons } from '@/lib/backend/season'
 import { redirect } from 'next/navigation'
 
@@ -26,7 +26,7 @@ export default async function RegisterStudentsPage() {
       throw new Error('受講生の情報を入力してください')
     }
 
-    redirect(`/admin/students/register/team?season=${seasonNumber}`)
+    redirect(`/admin/students/register/assign?season=${seasonNumber}`)
   }
 
   return (
