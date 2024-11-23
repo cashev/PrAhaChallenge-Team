@@ -22,6 +22,12 @@ export default async function TeamAssignmentPage({
 
   async function handleSubmit(
     seasonNumber: number,
+    existingAssignments: {
+      studentId: number
+      firstName: string
+      lastName: string
+      teamName: string
+    }[],
     assignments: {
       firstName: string
       lastName: string
@@ -33,6 +39,7 @@ export default async function TeamAssignmentPage({
     const storeId = temporaryStore.setData({
       seasonNumber,
       students: assignments,
+      existingStudents: existingAssignments,
     })
     redirect(`/admin/students/register/confirm?id=${storeId}`)
   }
@@ -47,6 +54,7 @@ export default async function TeamAssignmentPage({
           seasonNumber={data.seasonNumber}
           students={data.students}
           existingStudents={existingStudents.map((student) => ({
+            studentId: student.StudentID,
             firstName: student.FirstName,
             lastName: student.LastName,
             teamName: student.TeamName,

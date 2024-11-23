@@ -69,6 +69,9 @@ export const getStudentsBySeason = async (
 ): Promise<StudentBySeasonResponse[]> => {
   const response = await fetch(
     `${process.env.BACKEND_URL}/students/season/${seasonNumber}`,
+    {
+      cache: 'no-store',
+    },
   )
   const { students } = await response.json()
   return students

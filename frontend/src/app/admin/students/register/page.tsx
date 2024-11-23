@@ -28,7 +28,11 @@ export default async function RegisterStudentsPage() {
     }
 
     // セッションストレージに一時保存
-    const storeId = temporaryStore.setData({ seasonNumber, students })
+    const storeId = temporaryStore.setData({
+      seasonNumber,
+      students,
+      existingStudents: [],
+    })
     redirect(`/admin/students/register/team?id=${storeId}`)
   }
 

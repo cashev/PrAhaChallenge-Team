@@ -359,14 +359,21 @@ type RegisterRequest struct {
 }
 
 type RegisterTeam struct {
-	TeamName string            `json:"TeamName"`
-	Students []RegisterStudent `json:"Students"`
+	TeamName         string            `json:"TeamName"`
+	Students         []RegisterStudent `json:"Students"`
+	ExistingStudents []ExistingStudent `json:"ExistingStudents"`
 }
 
 type RegisterStudent struct {
 	FirstName string `json:"FirstName"`
 	LastName  string `json:"LastName"`
 	Email     string `json:"Email"`
+}
+
+type ExistingStudent struct {
+	StudentID uint   `json:"StudentID"`
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
 }
 
 func RegisterStudents(c *gin.Context) {
@@ -390,7 +397,21 @@ func RegisterStudents(c *gin.Context) {
 			}
 		}
 
-		teams := []models.Team{}
+		// 既存のTeamStudentの削除
+		existingStudentIDs := []uint{}
+		for _, reqTeam := range request.Teams {
+			for _, existingStudent := range reqTeam.ExistingStudents {
+				existingStudentIDs = append(existingStudentIDs, existingStudent.StudentID)
+			}
+		}
+		if len(existingStudentIDs) > 0 {
+			if err := tx.Unscoped().Where("student_id IN (?)", existingStudentIDs).Delete(&models.TeamStudent{}).Error; err != nil {
+				return err
+			}
+		}
+
+		newTeams := []models.Team{}
+		newStudents := []models.Student{}
 		for _, reqTeam := range request.Teams {
 			var team models.Team
 			// チームの存在確認
@@ -403,7 +424,7 @@ func RegisterStudents(c *gin.Context) {
 				if err := tx.Create(&team).Error; err != nil {
 					return err
 				}
-
+				newTeams = append(newTeams, team)
 				// SeasonTeamの作成
 				seasonTeam := models.SeasonTeam{
 					SeasonID: season.ID,
@@ -413,35 +434,37 @@ func RegisterStudents(c *gin.Context) {
 					return err
 				}
 			}
-			teams = append(teams, team)
-		}
-
-		students := []models.Student{}
-		studentTeams := []models.TeamStudent{}
-		for i, reqTeam := range request.Teams {
+			students := []models.Student{}
 			for _, student := range reqTeam.Students {
-				newStudent := models.Student{
+				students = append(students, models.Student{
 					FirstName: student.FirstName,
 					LastName:  student.LastName,
 					Email:     student.Email,
 					Status:    "受講中",
-				}
-				students = append(students, newStudent)
-				studentTeams = append(studentTeams, models.TeamStudent{
-					TeamID: teams[i].ID,
 				})
 			}
-		}
-		if err := tx.Create(&students).Error; err != nil {
-			return err
-		}
+			if err := tx.Create(&students).Error; err != nil {
+				return err
+			}
 
-		// 作成したStudentのIDをTeamStudentに設定
-		for i, student := range students {
-			studentTeams[i].StudentID = student.ID
-		}
-		if err := tx.Create(&studentTeams).Error; err != nil {
-			return err
+			studentTeams := []models.TeamStudent{}
+			for _, student := range students {
+				studentTeams = append(studentTeams, models.TeamStudent{
+					TeamID:    team.ID,
+					StudentID: student.ID,
+				})
+			}
+			for _, existingStudent := range reqTeam.ExistingStudents {
+				studentTeams = append(studentTeams, models.TeamStudent{
+					TeamID:    team.ID,
+					StudentID: existingStudent.StudentID,
+				})
+			}
+			if err := tx.Create(&studentTeams).Error; err != nil {
+				return err
+			}
+
+			newStudents = append(newStudents, students...)
 		}
 
 		var tasks []models.Task
@@ -450,7 +473,7 @@ func RegisterStudents(c *gin.Context) {
 		}
 		taskProgresses := []models.TaskProgress{}
 		for _, task := range tasks {
-			for _, student := range students {
+			for _, student := range newStudents {
 				taskProgresses = append(taskProgresses, models.TaskProgress{
 					TaskID:    task.ID,
 					StudentID: student.ID,
@@ -468,7 +491,7 @@ func RegisterStudents(c *gin.Context) {
 		}
 		genrePublications := []models.GenrePublication{}
 		for i, genre := range genres {
-			for _, team := range teams {
+			for _, team := range newTeams {
 				genrePublications = append(genrePublications, models.GenrePublication{
 					GenreID:     genre.ID,
 					SeasonID:    season.ID,

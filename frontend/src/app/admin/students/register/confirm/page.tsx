@@ -19,6 +19,12 @@ export default async function ConfirmPage({
 
   async function handleSubmit(
     seasonNumber: number,
+    existingAssignments: {
+      studentId: number
+      firstName: string
+      lastName: string
+      teamName: string
+    }[],
     assignments: {
       firstName: string
       lastName: string
@@ -32,24 +38,54 @@ export default async function ConfirmPage({
       (acc, student) => {
         const teamName = student.teamName
         if (!acc[teamName]) {
-          acc[teamName] = []
+          acc[teamName] = {
+            students: [],
+            existingStudents: [],
+          }
         }
-        acc[teamName].push(student)
+        acc[teamName].students.push(student)
         return acc
       },
       {} as Record<
         string,
-        { firstName: string; lastName: string; email: string }[]
+        {
+          students: { firstName: string; lastName: string; email: string }[]
+          existingStudents: {
+            studentId: number
+            firstName: string
+            lastName: string
+          }[]
+        }
       >,
     )
 
+    existingAssignments.forEach((student) => {
+      const teamName = student.teamName
+      if (!groupedStudents[teamName]) {
+        groupedStudents[teamName] = {
+          students: [],
+          existingStudents: [],
+        }
+      }
+      groupedStudents[teamName].existingStudents.push({
+        studentId: student.studentId,
+        firstName: student.firstName,
+        lastName: student.lastName,
+      })
+    })
+
     const teams = Object.entries(groupedStudents).map(
-      ([teamName, students]) => ({
+      ([teamName, { students, existingStudents }]) => ({
         TeamName: teamName,
         Students: students.map((student) => ({
           FirstName: student.firstName,
           LastName: student.lastName,
           Email: student.email,
+        })),
+        ExistingStudents: existingStudents.map((student) => ({
+          StudentID: student.studentId,
+          FirstName: student.firstName,
+          LastName: student.lastName,
         })),
       }),
     )
@@ -64,6 +100,12 @@ export default async function ConfirmPage({
 
   async function handleBack(
     seasonNumber: number,
+    existingAssignments: {
+      studentId: number
+      firstName: string
+      lastName: string
+      teamName: string
+    }[],
     assignments: {
       firstName: string
       lastName: string
@@ -75,6 +117,7 @@ export default async function ConfirmPage({
     const storeId = temporaryStore.setData({
       seasonNumber,
       students: assignments,
+      existingStudents: existingAssignments,
     })
     redirect(`/admin/students/register/team?id=${storeId}`)
   }
@@ -83,6 +126,7 @@ export default async function ConfirmPage({
     <StudentConfirmation
       seasonNumber={data.seasonNumber}
       students={data.students}
+      existingStudents={data.existingStudents}
       handleBack={handleBack}
       handleSubmit={handleSubmit}
     />

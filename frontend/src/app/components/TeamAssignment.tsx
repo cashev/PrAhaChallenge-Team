@@ -3,6 +3,13 @@
 import type React from 'react'
 import { useState } from 'react'
 
+type ExistingStudent = {
+  studentId: number
+  firstName: string
+  lastName: string
+  teamName: string
+}
+
 interface Student {
   firstName: string
   lastName: string
@@ -13,12 +20,12 @@ interface Student {
 interface Props {
   seasonNumber: number
   students: Student[]
-  existingStudents: {
-    firstName: string
-    lastName: string
-    teamName: string
-  }[]
-  onSubmit: (seasonNumber: number, assignments: Student[]) => void
+  existingStudents: ExistingStudent[]
+  onSubmit: (
+    seasonNumber: number,
+    existingAssignments: ExistingStudent[],
+    assignments: Student[],
+  ) => void
 }
 
 export default function TeamAssignment({
@@ -27,8 +34,19 @@ export default function TeamAssignment({
   existingStudents,
   onSubmit,
 }: Props) {
+  const [existingAssignments, setExistingAssignments] =
+    useState(existingStudents)
   const [assignments, setAssignments] = useState(students)
   const [error, setError] = useState<string | null>(null)
+
+  const handleExistingStudentChange = (index: number, value: string) => {
+    const newAssignments = [...existingAssignments]
+    newAssignments[index] = {
+      ...newAssignments[index],
+      teamName: value,
+    }
+    setExistingAssignments(newAssignments)
+  }
 
   const handleChange = (
     index: number,
@@ -82,24 +100,50 @@ export default function TeamAssignment({
       return
     }
 
-    await onSubmit(seasonNumber, assignments)
+    await onSubmit(seasonNumber, existingAssignments, assignments)
   }
 
   return (
     <div>
       {existingStudents.length > 0 && (
         <div className="mb-6">
-          <h2 className="mb-4 text-xl font-bold">既存の受講生</h2>
-          <div className="rounded bg-gray-100 p-4">
-            {existingStudents.map((student, index) => (
-              <div key={index} className="mb-2">
-                {student.lastName} {student.firstName} - {student.teamName}
+          <h2 className="mb-4 text-xl font-bold">{seasonNumber}期の受講生</h2>
+          <div className="space-y-4">
+            {existingAssignments.map((student, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-3 gap-4 rounded-lg border p-4"
+              >
+                <div className="col-span-2">
+                  <span className="block text-sm font-medium">
+                    {student.lastName} {student.firstName}
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    チーム名
+                  </label>
+                  <select
+                    value={student.teamName}
+                    onChange={(e) =>
+                      handleExistingStudentChange(index, e.target.value)
+                    }
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map((team) => (
+                      <option key={team} value={team}>
+                        {team}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
+      <h2 className="mb-4 text-xl font-bold">新規受講生</h2>
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           {assignments.map((student, index) => (

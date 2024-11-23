@@ -6,6 +6,12 @@ interface StoredData {
     email: string
     teamName: string
   }[]
+  existingStudents: {
+    studentId: number
+    firstName: string
+    lastName: string
+    teamName: string
+  }[]
 }
 
 class TemporaryStore {

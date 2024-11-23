@@ -49,3 +49,9 @@ export interface RegisterStudent {
   LastName: string
   Email: string
 }
+
+export interface ExistingStudent {
+  StudentID: number
+  FirstName: string
+  LastName: string
+}
