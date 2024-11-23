@@ -22,6 +22,12 @@ export default async function TeamAssignmentPage({
 
   async function handleSubmit(
     seasonNumber: number,
+    existingStudents: {
+      studentId: number
+      firstName: string
+      lastName: string
+      teamName: string
+    }[],
     existingAssignments: {
       studentId: number
       firstName: string
@@ -39,7 +45,8 @@ export default async function TeamAssignmentPage({
     const storeId = temporaryStore.setData({
       seasonNumber,
       students: assignments,
-      existingStudents: existingAssignments,
+      existingStudents,
+      existingAssignments,
     })
     redirect(`/admin/students/register/confirm?id=${storeId}`)
   }

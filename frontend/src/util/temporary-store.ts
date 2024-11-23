@@ -12,6 +12,12 @@ interface StoredData {
     lastName: string
     teamName: string
   }[]
+  existingAssignments: {
+    studentId: number
+    firstName: string
+    lastName: string
+    teamName: string
+  }[]
 }
 
 class TemporaryStore {

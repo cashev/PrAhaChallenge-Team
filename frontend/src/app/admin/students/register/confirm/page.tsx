@@ -34,7 +34,7 @@ export default async function ConfirmPage({
   ) {
     'use server'
 
-    const groupedStudents = assignments.reduce(
+    const groupedStudents = existingAssignments.reduce(
       (acc, student) => {
         const teamName = student.teamName
         if (!acc[teamName]) {
@@ -43,7 +43,11 @@ export default async function ConfirmPage({
             existingStudents: [],
           }
         }
-        acc[teamName].students.push(student)
+        acc[teamName].existingStudents.push({
+          studentId: student.studentId,
+          firstName: student.firstName,
+          lastName: student.lastName,
+        })
         return acc
       },
       {} as Record<
@@ -59,7 +63,7 @@ export default async function ConfirmPage({
       >,
     )
 
-    existingAssignments.forEach((student) => {
+    assignments.forEach((student) => {
       const teamName = student.teamName
       if (!groupedStudents[teamName]) {
         groupedStudents[teamName] = {
@@ -67,10 +71,10 @@ export default async function ConfirmPage({
           existingStudents: [],
         }
       }
-      groupedStudents[teamName].existingStudents.push({
-        studentId: student.studentId,
+      groupedStudents[teamName].students.push({
         firstName: student.firstName,
         lastName: student.lastName,
+        email: student.email,
       })
     })
 
@@ -100,6 +104,12 @@ export default async function ConfirmPage({
 
   async function handleBack(
     seasonNumber: number,
+    existingStudents: {
+      studentId: number
+      firstName: string
+      lastName: string
+      teamName: string
+    }[],
     existingAssignments: {
       studentId: number
       firstName: string
@@ -117,18 +127,22 @@ export default async function ConfirmPage({
     const storeId = temporaryStore.setData({
       seasonNumber,
       students: assignments,
-      existingStudents: existingAssignments,
+      existingStudents,
+      existingAssignments,
     })
     redirect(`/admin/students/register/team?id=${storeId}`)
   }
 
   return (
-    <StudentConfirmation
-      seasonNumber={data.seasonNumber}
-      students={data.students}
-      existingStudents={data.existingStudents}
-      handleBack={handleBack}
-      handleSubmit={handleSubmit}
-    />
+    <div className="mx-auto max-w-4xl py-8">
+      <StudentConfirmation
+        seasonNumber={data.seasonNumber}
+        students={data.students}
+        existingStudents={data.existingStudents}
+        existingAssignments={data.existingAssignments}
+        handleBack={handleBack}
+        handleSubmit={handleSubmit}
+      />
+    </div>
   )
 }

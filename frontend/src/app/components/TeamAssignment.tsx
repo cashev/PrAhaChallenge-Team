@@ -23,6 +23,7 @@ interface Props {
   existingStudents: ExistingStudent[]
   onSubmit: (
     seasonNumber: number,
+    existingStudents: ExistingStudent[],
     existingAssignments: ExistingStudent[],
     assignments: Student[],
   ) => void
@@ -102,7 +103,12 @@ export default function TeamAssignment({
       return
     }
 
-    await onSubmit(seasonNumber, existingAssignments, assignments)
+    await onSubmit(
+      seasonNumber,
+      existingStudents,
+      existingAssignments,
+      assignments,
+    )
   }
 
   return (

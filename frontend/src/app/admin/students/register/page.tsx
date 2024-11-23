@@ -32,6 +32,7 @@ export default async function RegisterStudentsPage() {
       seasonNumber,
       students,
       existingStudents: [],
+      existingAssignments: [],
     })
     redirect(`/admin/students/register/team?id=${storeId}`)
   }
