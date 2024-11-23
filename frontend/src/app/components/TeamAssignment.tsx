@@ -1,7 +1,8 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import type React from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type ExistingStudent = {
   studentId: number
@@ -10,7 +11,7 @@ type ExistingStudent = {
   teamName: string
 }
 
-interface Student {
+interface NewStudent {
   firstName: string
   lastName: string
   email: string
@@ -19,42 +20,72 @@ interface Student {
 
 interface Props {
   seasonNumber: number
-  students: Student[]
   existingStudents: ExistingStudent[]
-  onSubmit: (
-    seasonNumber: number,
-    existingStudents: ExistingStudent[],
-    existingAssignments: ExistingStudent[],
-    assignments: Student[],
-  ) => void
+}
+
+const convertToNewStudent = (studentInfos: string | null): NewStudent[] => {
+  if (!studentInfos) {
+    return []
+  }
+  return studentInfos
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+    .map((line) => {
+      const [nameInfo, email, teamName] = line.split('\t')
+      const [firstName, lastName] = nameInfo.split(' ')
+      return { firstName, lastName, email, teamName: teamName.toUpperCase() }
+    })
 }
 
 export default function TeamAssignment({
   seasonNumber,
-  students,
   existingStudents,
-  onSubmit,
 }: Props) {
-  const [existingAssignments, setExistingAssignments] =
+  const [assignmentsForExisting, setAssignmentsForExisting] =
     useState(existingStudents)
-  const [assignments, setAssignments] = useState(students)
+  const [assignmentsForNew, setAssignmentsForNew] = useState<NewStudent[]>([])
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
-  const handleExistingStudentChange = (index: number, value: string) => {
-    const newAssignments = [...existingAssignments]
+  useEffect(() => {
+    const studentInfos = localStorage.getItem('register_studentInfos')
+    const newStudents = convertToNewStudent(studentInfos)
+    if (newStudents.length === 0) {
+      router.push('/admin/students/register')
+      return
+    }
+    setAssignmentsForNew(newStudents)
+
+    const previousAssignmentsForExisting = localStorage.getItem(
+      'register_assignmentsForExisting',
+    )
+    const previousAssignmentsForNew = localStorage.getItem(
+      'register_assignmentsForNew',
+    )
+    if (previousAssignmentsForExisting && previousAssignmentsForNew) {
+      setAssignmentsForExisting(JSON.parse(previousAssignmentsForExisting))
+      setAssignmentsForNew(JSON.parse(previousAssignmentsForNew))
+    } else {
+      setAssignmentsForExisting(existingStudents)
+    }
+  }, [router, existingStudents])
+
+  const handleChangeAssignmentForExisting = (index: number, value: string) => {
+    const newAssignments = [...assignmentsForExisting]
     newAssignments[index] = {
       ...newAssignments[index],
       teamName: value,
     }
-    setExistingAssignments(newAssignments)
+    setAssignmentsForExisting(newAssignments)
   }
 
-  const handleChange = (
+  const handleChangeAssignmentForNew = (
     index: number,
     field: 'name' | 'email' | 'teamName',
     value: string,
   ) => {
-    const newAssignments = [...assignments]
+    const newAssignments = [...assignmentsForNew]
     if (field === 'name') {
       const [firstName, lastName] = value.split(' ')
       newAssignments[index] = {
@@ -68,7 +99,7 @@ export default function TeamAssignment({
         [field]: field === 'teamName' ? value.toUpperCase() : value,
       }
     }
-    setAssignments(newAssignments)
+    setAssignmentsForNew(newAssignments)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,7 +107,7 @@ export default function TeamAssignment({
     setError(null)
 
     // 既存の受講生と新規受講生を合わせたチーム所属人数を集計
-    const teamCounts = [...assignments, ...existingAssignments].reduce(
+    const teamCounts = [...assignmentsForNew, ...assignmentsForExisting].reduce(
       (acc, curr) => {
         const teamName = curr.teamName
         acc[teamName] = (acc[teamName] || 0) + 1
@@ -90,8 +121,10 @@ export default function TeamAssignment({
       .filter(
         ([teamName]) =>
           // 新規受講生または既存受講生が所属しているチームのみをフィルタリング
-          assignments.some((student) => student.teamName === teamName) ||
-          existingAssignments.some((student) => student.teamName === teamName),
+          assignmentsForNew.some((student) => student.teamName === teamName) ||
+          assignmentsForExisting.some(
+            (student) => student.teamName === teamName,
+          ),
       )
       .filter(([, count]) => count === 1)
       .map(([teamName]) => teamName)
@@ -103,21 +136,29 @@ export default function TeamAssignment({
       return
     }
 
-    await onSubmit(
-      seasonNumber,
-      existingStudents,
-      existingAssignments,
-      assignments,
+    localStorage.setItem(
+      'register_existingStudents',
+      JSON.stringify(existingStudents),
     )
+    localStorage.setItem(
+      'register_assignmentsForExisting',
+      JSON.stringify(assignmentsForExisting),
+    )
+    localStorage.setItem(
+      'register_assignmentsForNew',
+      JSON.stringify(assignmentsForNew),
+    )
+
+    router.push(`/admin/students/register/confirm?season=${seasonNumber}`)
   }
 
   return (
     <div>
-      {existingStudents.length > 0 && (
+      {assignmentsForExisting.length > 0 && (
         <div className="mb-6">
           <h2 className="mb-4 text-xl font-bold">{seasonNumber}期の受講生</h2>
           <div className="space-y-4">
-            {existingAssignments.map((student, index) => (
+            {assignmentsForExisting.map((student, index) => (
               <div
                 key={index}
                 className="grid grid-cols-3 gap-4 rounded-lg border p-4"
@@ -134,7 +175,7 @@ export default function TeamAssignment({
                   <select
                     value={student.teamName}
                     onChange={(e) =>
-                      handleExistingStudentChange(index, e.target.value)
+                      handleChangeAssignmentForExisting(index, e.target.value)
                     }
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
                   >
@@ -154,7 +195,7 @@ export default function TeamAssignment({
       <h2 className="mb-4 text-xl font-bold">新規受講生</h2>
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
-          {assignments.map((student, index) => (
+          {assignmentsForNew.map((student, index) => (
             <div
               key={index}
               className="grid grid-cols-3 gap-4 rounded-lg border p-4"
@@ -166,7 +207,9 @@ export default function TeamAssignment({
                 <input
                   type="text"
                   value={`${student.firstName} ${student.lastName}`}
-                  onChange={(e) => handleChange(index, 'name', e.target.value)}
+                  onChange={(e) =>
+                    handleChangeAssignmentForNew(index, 'name', e.target.value)
+                  }
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
                   placeholder="山田 太郎"
                 />
@@ -178,7 +221,9 @@ export default function TeamAssignment({
                 <input
                   type="email"
                   value={student.email}
-                  onChange={(e) => handleChange(index, 'email', e.target.value)}
+                  onChange={(e) =>
+                    handleChangeAssignmentForNew(index, 'email', e.target.value)
+                  }
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
                 />
               </div>
@@ -189,7 +234,11 @@ export default function TeamAssignment({
                 <select
                   value={student.teamName}
                   onChange={(e) =>
-                    handleChange(index, 'teamName', e.target.value)
+                    handleChangeAssignmentForNew(
+                      index,
+                      'teamName',
+                      e.target.value,
+                    )
                   }
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
                 >
@@ -209,6 +258,13 @@ export default function TeamAssignment({
             {error && (
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             )}
+            <button
+              type="button"
+              onClick={() => router.push(`/admin/students/register`)}
+              className="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            >
+              戻る
+            </button>
             <button
               type="submit"
               className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

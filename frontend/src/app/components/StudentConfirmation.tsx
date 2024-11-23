@@ -1,5 +1,7 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+
 interface ExistingStudent {
   studentId: number
   firstName: string
@@ -16,52 +18,108 @@ interface Student {
 
 interface StudentConfirmationProps {
   seasonNumber: number
-  students: Student[]
-  existingStudents: ExistingStudent[]
-  existingAssignments: ExistingStudent[]
-  handleSubmit: (
+  onSubmit: (
     seasonNumber: number,
-    existingStudents: ExistingStudent[],
-    students: Student[],
+    assignmentsForExisting: ExistingStudent[],
+    assignmentsForNew: Student[],
   ) => Promise<void>
-  handleBack: (
-    seasonNumber: number,
-    existingStudents: ExistingStudent[],
-    existingAssignments: ExistingStudent[],
-    students: Student[],
-  ) => Promise<void>
+}
+
+const getAllTeams = (
+  assignmentsForExisting: ExistingStudent[],
+  assignmentsForNew: Student[],
+) => {
+  return new Set([
+    ...assignmentsForExisting.map((s) => s.teamName),
+    ...assignmentsForNew.map((s) => s.teamName),
+  ])
+}
+
+const getChangedTeamStudentIds = (
+  newAssignments: ExistingStudent[],
+  originalAssignments: ExistingStudent[],
+) => {
+  return new Set(
+    newAssignments
+      .filter((assignment) => {
+        const originalTeam = originalAssignments.find(
+          (s) =>
+            s.firstName === assignment.firstName &&
+            s.lastName === assignment.lastName,
+        )?.teamName
+        return originalTeam && originalTeam !== assignment.teamName
+      })
+      .map((s) => s.studentId),
+  )
+}
+
+const getExistingTeamNames = (existingStudents: ExistingStudent[]) => {
+  return new Set(existingStudents.map((s) => s.teamName))
 }
 
 export default function StudentConfirmation({
   seasonNumber,
-  students,
-  existingStudents,
-  existingAssignments,
-  handleSubmit,
-  handleBack,
+  onSubmit,
 }: StudentConfirmationProps) {
-  // 全てのチームを取得（新規と既存の両方）
-  const allTeams = new Set([
-    ...existingAssignments.map((s) => s.teamName),
-    ...students.map((s) => s.teamName || '未所属'),
-  ])
+  const router = useRouter()
 
-  // チーム変更された既存受講生を特定
-  const changedTeamStudents = new Set(
-    existingAssignments
-      .filter((existing) => {
-        const originalTeam = existingStudents.find(
-          (s) =>
-            s.firstName === existing.firstName &&
-            s.lastName === existing.lastName,
-        )?.teamName
-        return originalTeam && originalTeam !== existing.teamName
-      })
-      .map((s) => `${s.firstName}${s.lastName}`),
+  const existingStudents: ExistingStudent[] = JSON.parse(
+    localStorage.getItem('register_existingStudents') || '[]',
   )
+  const assignmentsForExisting: ExistingStudent[] = JSON.parse(
+    localStorage.getItem('register_assignmentsForExisting') || '[]',
+  )
+  const assignmentsForNew: Student[] = JSON.parse(
+    localStorage.getItem('register_assignmentsForNew') || '[]',
+  )
+  if (assignmentsForExisting.length === 0 && assignmentsForNew.length === 0) {
+    router.push('/admin/students/register')
+    return null
+  }
 
+  // 全てのチームを取得（新規と既存の両方）
+  const allTeams = getAllTeams(assignmentsForExisting, assignmentsForNew)
+  // チーム変更された既存受講生を特定
+  const changedTeamStudentIds = getChangedTeamStudentIds(
+    assignmentsForExisting,
+    existingStudents,
+  )
   // 既存のチーム名のセットを作成
-  const existingTeamNames = new Set(existingStudents.map((s) => s.teamName))
+  const existingTeamNames = getExistingTeamNames(existingStudents)
+
+  const handleSubmit = async (
+    seasonNumber: number,
+    assignmentsForExisting: ExistingStudent[],
+    assignmentsForNew: Student[],
+  ) => {
+    await onSubmit(seasonNumber, assignmentsForExisting, assignmentsForNew)
+    localStorage.removeItem('register_studentInfos')
+    localStorage.removeItem('register_existingStudents')
+    localStorage.removeItem('register_assignmentsForExisting')
+    localStorage.removeItem('register_assignmentsForNew')
+    router.push(`/admin/students?seasonNumber=${seasonNumber}`)
+  }
+
+  const handleBack = (
+    seasonNumber: number,
+    existingStudents: ExistingStudent[],
+    assignmentsForExisting: ExistingStudent[],
+    assignmentsForNew: Student[],
+  ) => {
+    localStorage.setItem(
+      'register_existingStudents',
+      JSON.stringify(existingStudents),
+    )
+    localStorage.setItem(
+      'register_assignmentsForExisting',
+      JSON.stringify(assignmentsForExisting),
+    )
+    localStorage.setItem(
+      'register_assignmentsForNew',
+      JSON.stringify(assignmentsForNew),
+    )
+    router.push(`/admin/students/register/team?season=${seasonNumber}`)
+  }
 
   return (
     <div className="rounded-lg bg-white p-8 shadow dark:bg-gray-800">
@@ -92,74 +150,75 @@ export default function StudentConfirmation({
               </tr>
             </thead>
             <tbody>
-              {Array.from(allTeams).map((teamName) => {
-                const teamStudents = students.filter(
-                  (s) => s.teamName === teamName,
-                )
-                const teamExistingStudents = existingAssignments.filter(
-                  (s) => s.teamName === teamName,
-                )
-                const isNewTeam = !existingTeamNames.has(teamName)
+              {Array.from(allTeams)
+                .sort()
+                .map((teamName) => {
+                  const teamExistingStudents = assignmentsForExisting.filter(
+                    (s) => s.teamName === teamName,
+                  )
+                  const teamNewStudents = assignmentsForNew.filter(
+                    (s) => s.teamName === teamName,
+                  )
+                  const isNewTeam = !existingTeamNames.has(teamName)
 
-                return [...teamExistingStudents, ...teamStudents].map(
-                  (student, index) => {
-                    const isExisting = 'studentId' in student
-                    const isTeamChanged =
-                      isExisting &&
-                      changedTeamStudents.has(
-                        `${student.firstName}${student.lastName}`,
-                      )
+                  return [...teamExistingStudents, ...teamNewStudents].map(
+                    (student, index) => {
+                      const isExisting = 'studentId' in student
+                      const isTeamChanged =
+                        isExisting &&
+                        changedTeamStudentIds.has(student.studentId)
 
-                    return (
-                      <tr
-                        key={`${teamName}-${index}`}
-                        className="border-b border-gray-200 dark:border-gray-700"
-                      >
-                        {index === 0 && (
-                          <td
-                            rowSpan={
-                              teamStudents.length + teamExistingStudents.length
-                            }
-                            className={`px-4 py-2 text-gray-700 dark:text-gray-300
+                      return (
+                        <tr
+                          key={`${teamName}-${index}`}
+                          className="border-b border-gray-200 dark:border-gray-700"
+                        >
+                          {index === 0 && (
+                            <td
+                              rowSpan={
+                                teamNewStudents.length +
+                                teamExistingStudents.length
+                              }
+                              className={`px-4 py-2 text-gray-700 dark:text-gray-300
                                 ${
                                   isNewTeam
                                     ? 'bg-blue-50 dark:bg-blue-900/20'
                                     : 'bg-white dark:bg-gray-800'
                                 }`}
+                            >
+                              {teamName}
+                            </td>
+                          )}
+                          <td
+                            className={`px-4 py-2 ${
+                              isTeamChanged
+                                ? 'font-medium text-orange-600 dark:text-orange-400'
+                                : 'text-gray-700 dark:text-gray-300'
+                            } ${!isExisting ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                           >
-                            {teamName}
+                            {student.lastName} {student.firstName}
                           </td>
-                        )}
-                        <td
-                          className={`px-4 py-2 ${
-                            isTeamChanged
-                              ? 'font-medium text-orange-600 dark:text-orange-400'
-                              : 'text-gray-700 dark:text-gray-300'
-                          } ${!isExisting ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                        >
-                          {student.lastName} {student.firstName}
-                        </td>
-                        <td
-                          className={`px-4 py-2 text-gray-700 dark:text-gray-300
+                          <td
+                            className={`px-4 py-2 text-gray-700 dark:text-gray-300
                               ${!isExisting ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                        >
-                          {'email' in student ? student.email : '-'}
-                        </td>
-                        <td
-                          className={`px-4 py-2 text-sm text-gray-500 dark:text-gray-400
+                          >
+                            {'email' in student ? student.email : '-'}
+                          </td>
+                          <td
+                            className={`px-4 py-2 text-sm text-gray-500 dark:text-gray-400
                               ${!isExisting ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                        >
-                          {isExisting
-                            ? isTeamChanged
-                              ? '既存（チーム変更）'
-                              : '既存'
-                            : '新規'}
-                        </td>
-                      </tr>
-                    )
-                  },
-                )
-              })}
+                          >
+                            {isExisting
+                              ? isTeamChanged
+                                ? '既存（チーム変更）'
+                                : '既存'
+                              : '新規'}
+                          </td>
+                        </tr>
+                      )
+                    },
+                  )
+                })}
             </tbody>
           </table>
         </div>
@@ -171,8 +230,8 @@ export default function StudentConfirmation({
             handleBack(
               seasonNumber,
               existingStudents,
-              existingAssignments,
-              students,
+              assignmentsForExisting,
+              assignmentsForNew,
             )
           }
           className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
@@ -181,7 +240,11 @@ export default function StudentConfirmation({
         </button>
         <button
           onClick={() =>
-            handleSubmit(seasonNumber, existingAssignments, students)
+            handleSubmit(
+              seasonNumber,
+              assignmentsForExisting,
+              assignmentsForNew,
+            )
           }
           className="flex-1 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
         >

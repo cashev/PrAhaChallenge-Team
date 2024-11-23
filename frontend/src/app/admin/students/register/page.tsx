@@ -1,6 +1,5 @@
 import StudentNameInput from '@/app/components/StudentNameInput'
 import { getSeasons } from '@/lib/backend/season'
-import { temporaryStore } from '@/util/temporary-store'
 import { redirect } from 'next/navigation'
 
 export default async function RegisterStudentsPage() {
@@ -27,14 +26,7 @@ export default async function RegisterStudentsPage() {
       throw new Error('受講生の情報を入力してください')
     }
 
-    // セッションストレージに一時保存
-    const storeId = temporaryStore.setData({
-      seasonNumber,
-      students,
-      existingStudents: [],
-      existingAssignments: [],
-    })
-    redirect(`/admin/students/register/team?id=${storeId}`)
+    redirect(`/admin/students/register/team?season=${seasonNumber}`)
   }
 
   return (

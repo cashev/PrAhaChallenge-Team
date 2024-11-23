@@ -1,55 +1,24 @@
 import TeamAssignment from '@/app/components/TeamAssignment'
 import { getStudentsBySeason } from '@/lib/backend/student'
-import { temporaryStore } from '@/util/temporary-store'
-import { redirect } from 'next/navigation'
+
+const doGetStudents = async (seasonNumber: number) => {
+  'use server'
+  const existingStudents = await getStudentsBySeason(seasonNumber)
+  return existingStudents.map((student) => ({
+    studentId: student.StudentID,
+    firstName: student.FirstName,
+    lastName: student.LastName,
+    teamName: student.TeamName,
+  }))
+}
 
 export default async function TeamAssignmentPage({
   searchParams,
 }: {
-  searchParams: { id: string }
+  searchParams: { season: number }
 }) {
-  if (!searchParams.id) {
-    redirect('/admin/students/register')
-  }
-
-  const data = temporaryStore.getData(searchParams.id)
-  if (!data) {
-    redirect('/admin/students/register')
-  }
-
   // 既存の受講生を取得
-  const existingStudents = await getStudentsBySeason(data.seasonNumber)
-
-  async function handleSubmit(
-    seasonNumber: number,
-    existingStudents: {
-      studentId: number
-      firstName: string
-      lastName: string
-      teamName: string
-    }[],
-    existingAssignments: {
-      studentId: number
-      firstName: string
-      lastName: string
-      teamName: string
-    }[],
-    assignments: {
-      firstName: string
-      lastName: string
-      email: string
-      teamName: string
-    }[],
-  ) {
-    'use server'
-    const storeId = temporaryStore.setData({
-      seasonNumber,
-      students: assignments,
-      existingStudents,
-      existingAssignments,
-    })
-    redirect(`/admin/students/register/confirm?id=${storeId}`)
-  }
+  const existingStudents = await doGetStudents(searchParams.season)
 
   return (
     <div className="mx-auto max-w-2xl py-8">
@@ -58,15 +27,8 @@ export default async function TeamAssignmentPage({
           チーム割り当て
         </h1>
         <TeamAssignment
-          seasonNumber={data.seasonNumber}
-          students={data.students}
-          existingStudents={existingStudents.map((student) => ({
-            studentId: student.StudentID,
-            firstName: student.FirstName,
-            lastName: student.LastName,
-            teamName: student.TeamName,
-          }))}
-          onSubmit={handleSubmit}
+          seasonNumber={searchParams.season}
+          existingStudents={existingStudents}
         />
       </div>
     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface StudentNameInputProps {
   seasonNumbers: number[]
@@ -19,6 +19,13 @@ export default function StudentNameInput({
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
+  useEffect(() => {
+    localStorage.removeItem('register_studentInfos')
+    localStorage.removeItem('register_existingStudents')
+    localStorage.removeItem('register_assignmentsForExisting')
+    localStorage.removeItem('register_assignmentsForNew')
+  }, [])
+
   const handleSeasonNumberChange = (value: number) => {
     setSeasonNumber(value)
     if (seasonNumbers.includes(value)) {
@@ -32,9 +39,8 @@ export default function StudentNameInput({
     e.preventDefault()
     setMessage(null)
     try {
-      if (seasonNumbers.includes(seasonNumber)) {
-        setMessage(`${seasonNumber}期に受講生を追加します`)
-      }
+      localStorage.setItem('register_studentInfos', names)
+
       await onSubmit(seasonNumber, names)
     } catch (error) {
       setError(error instanceof Error ? error.message : '登録に失敗しました')
