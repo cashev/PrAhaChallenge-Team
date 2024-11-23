@@ -42,7 +42,7 @@ const StudentRow: React.FC<StudentRowProps> = ({ student, onDataUpdate }) => {
           {student.SeasonNumber ?? ''}
         </td>
         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-100">
-          {student.TeamName}
+          {student.SeasonNumber ?? ''}-{student.TeamName}
         </td>
         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-100">
           {student.Status}

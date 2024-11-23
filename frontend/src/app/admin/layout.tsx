@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type React from 'react'
+import ToastProvider from '../components/ToastProvider'
 
 export default function AdminLayout({
   children,
@@ -60,7 +61,9 @@ export default function AdminLayout({
       </nav>
 
       <main className="py-10">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
+        <ToastProvider>
+          <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
+        </ToastProvider>
       </main>
     </div>
   )

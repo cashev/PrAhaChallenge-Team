@@ -6,6 +6,7 @@ import type { GetTeamsResponse } from '@/lib/backend/types/team-type'
 import { formatDate } from '@/util/dateUtils'
 import type React from 'react'
 import { useEffect, useState } from 'react'
+import { Bounce, toast } from 'react-toastify'
 import { studentSchema } from '../schemas/studentSchema'
 
 interface StudentEditFormProps {
@@ -22,6 +23,7 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
   const [errors, setErrors] = useState<any>({})
   const [teams, setTeams] = useState<GetTeamsResponse[]>([])
   const [apiError, setApiError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,17 +68,30 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
     const parsed = studentSchema.safeParse(formData)
 
     if (parsed.success) {
       try {
         await updateStudent(formData)
         setApiError(null)
-        console.log('受講生の保存に成功しました')
+        toast.success('受講生情報を保存しました。', {
+          position: 'top-center',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+          transition: Bounce,
+        })
         onDataUpdate()
       } catch (error) {
         console.error('受講生の保存中にエラーが発生しました:', error)
         setApiError('更新に失敗しました。もう一度お試しください。')
+      } finally {
+        setIsSubmitting(false)
       }
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,6 +101,7 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
       })
       setErrors(formErrors)
       setApiError(null)
+      setIsSubmitting(false)
     }
   }
 
@@ -172,7 +188,7 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
           <option value="">未所属</option>
           {teams?.map((team) => (
             <option key={team.ID} value={team.ID}>
-              {team.Name}
+              {team.SeasonNumber}-{team.Name}
             </option>
           ))}
         </select>
@@ -273,9 +289,10 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
 
       <button
         type="submit"
+        disabled={isSubmitting}
         className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
       >
-        保存
+        {isSubmitting ? '保存中...' : '保存'}
       </button>
       {apiError && <p className="text-sm text-red-500">{apiError}</p>}
     </form>
