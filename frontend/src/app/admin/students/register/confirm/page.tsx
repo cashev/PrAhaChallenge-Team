@@ -1,5 +1,4 @@
 import StudentConfirmation from '@/app/components/StudentConfirmation'
-import { getNextSeasonNumber } from '@/lib/backend/season'
 import { registerStudents } from '@/lib/backend/student'
 import { temporaryStore } from '@/util/temporary-store'
 import { redirect } from 'next/navigation'
@@ -13,14 +12,13 @@ export default async function ConfirmPage({
     redirect('/admin/students/register')
   }
 
-  const students = temporaryStore.getStudents(searchParams.id)
-  if (!students) {
+  const data = temporaryStore.getData(searchParams.id)
+  if (!data) {
     redirect('/admin/students/register')
   }
 
-  const nextSeasonNumber = await getNextSeasonNumber()
-
   async function handleSubmit(
+    seasonNumber: number,
     assignments: {
       firstName: string
       lastName: string
@@ -57,14 +55,15 @@ export default async function ConfirmPage({
     )
 
     const request = {
-      SeasonNumber: nextSeasonNumber,
+      SeasonNumber: seasonNumber,
       Teams: teams,
     }
     await registerStudents(request)
-    redirect(`/admin/students?seasonNumber=${nextSeasonNumber}`)
+    redirect(`/admin/students?seasonNumber=${seasonNumber}`)
   }
 
   async function handleBack(
+    seasonNumber: number,
     assignments: {
       firstName: string
       lastName: string
@@ -73,14 +72,17 @@ export default async function ConfirmPage({
     }[],
   ) {
     'use server'
-    const storeId = temporaryStore.setStudents(assignments)
+    const storeId = temporaryStore.setData({
+      seasonNumber,
+      students: assignments,
+    })
     redirect(`/admin/students/register/team?id=${storeId}`)
   }
 
   return (
     <StudentConfirmation
-      nextSeasonNumber={nextSeasonNumber}
-      students={students}
+      seasonNumber={data.seasonNumber}
+      students={data.students}
       handleBack={handleBack}
       handleSubmit={handleSubmit}
     />

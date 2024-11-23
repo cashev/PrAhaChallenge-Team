@@ -1,13 +1,16 @@
-type Student = {
-  firstName: string
-  lastName: string
-  email: string
-  teamName: string
+interface StoredData {
+  seasonNumber: number
+  students: {
+    firstName: string
+    lastName: string
+    email: string
+    teamName: string
+  }[]
 }
 
 class TemporaryStore {
   private static instance: TemporaryStore
-  private store: Map<string, Student[]>
+  private store: Map<string, StoredData>
 
   private constructor() {
     this.store = new Map()
@@ -20,16 +23,16 @@ class TemporaryStore {
     return TemporaryStore.instance
   }
 
-  setStudents(students: Student[]) {
+  setData(data: StoredData) {
     const id = crypto.randomUUID()
-    this.store.set(id, students)
+    this.store.set(id, data)
     return id
   }
 
-  getStudents(id: string): Student[] | null {
-    const students = this.store.get(id)
+  getData(id: string): StoredData | null {
+    const data = this.store.get(id)
     this.store.delete(id) // 一度取得したら削除
-    return students || null
+    return data || null
   }
 }
 

@@ -3,27 +3,30 @@
 import type React from 'react'
 import { useState } from 'react'
 
-interface TeamAssignmentProps {
-  students: {
+interface Student {
+  firstName: string
+  lastName: string
+  email: string
+  teamName: string
+}
+
+interface Props {
+  seasonNumber: number
+  students: Student[]
+  existingStudents: {
     firstName: string
     lastName: string
-    email: string
     teamName: string
   }[]
-  onSubmit: (
-    assignments: {
-      firstName: string
-      lastName: string
-      email: string
-      teamName: string
-    }[],
-  ) => Promise<void>
+  onSubmit: (seasonNumber: number, assignments: Student[]) => void
 }
 
 export default function TeamAssignment({
+  seasonNumber,
   students,
+  existingStudents,
   onSubmit,
-}: TeamAssignmentProps) {
+}: Props) {
   const [assignments, setAssignments] = useState(students)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,8 +56,8 @@ export default function TeamAssignment({
     e.preventDefault()
     setError(null)
 
-    // チームごとの所属人数を集計
-    const teamCounts = assignments.reduce(
+    // 既存の受講生と新規受講生を合わせたチーム所属人数を集計
+    const teamCounts = [...assignments, ...existingStudents].reduce(
       (acc, curr) => {
         const teamName = curr.teamName
         acc[teamName] = (acc[teamName] || 0) + 1
@@ -63,8 +66,12 @@ export default function TeamAssignment({
       {} as Record<string, number>,
     )
 
-    // 1人チームがあるかチェック
+    // 1人チームがあるかチェック（新規受講生のチームのみ）
     const singleMemberTeams = Object.entries(teamCounts)
+      .filter(([teamName]) =>
+        // 新規受講生が所属しているチームのみをフィルタリング
+        assignments.some((student) => student.teamName === teamName),
+      )
       .filter(([, count]) => count === 1)
       .map(([teamName]) => teamName)
 
@@ -75,75 +82,90 @@ export default function TeamAssignment({
       return
     }
 
-    await onSubmit(assignments)
+    await onSubmit(seasonNumber, assignments)
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="space-y-4">
-        {assignments.map((student, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-3 gap-4 rounded-lg border p-4"
-          >
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                名前
-              </label>
-              <input
-                type="text"
-                value={`${student.firstName} ${student.lastName}`}
-                onChange={(e) => handleChange(index, 'name', e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
-                placeholder="山田 太郎"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                メールアドレス
-              </label>
-              <input
-                type="email"
-                value={student.email}
-                onChange={(e) => handleChange(index, 'email', e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                チーム名
-              </label>
-              <select
-                value={student.teamName}
-                onChange={(e) =>
-                  handleChange(index, 'teamName', e.target.value)
-                }
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
-              >
-                <option value="">チームを選択</option>
-                {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map((team) => (
-                  <option key={team} value={team}>
-                    {team}
-                  </option>
-                ))}
-              </select>
-            </div>
+    <div>
+      {existingStudents.length > 0 && (
+        <div className="mb-6">
+          <h2 className="mb-4 text-xl font-bold">既存の受講生</h2>
+          <div className="rounded bg-gray-100 p-4">
+            {existingStudents.map((student, index) => (
+              <div key={index} className="mb-2">
+                {student.lastName} {student.firstName} - {student.teamName}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div className="mt-4">
-        <div className="flex items-center justify-end space-x-4">
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
-          <button
-            type="submit"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            確認画面へ
-          </button>
         </div>
-      </div>
-    </form>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-4">
+          {assignments.map((student, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-3 gap-4 rounded-lg border p-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  名前
+                </label>
+                <input
+                  type="text"
+                  value={`${student.firstName} ${student.lastName}`}
+                  onChange={(e) => handleChange(index, 'name', e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                  placeholder="山田 太郎"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  メールアドレス
+                </label>
+                <input
+                  type="email"
+                  value={student.email}
+                  onChange={(e) => handleChange(index, 'email', e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  チーム名
+                </label>
+                <select
+                  value={student.teamName}
+                  onChange={(e) =>
+                    handleChange(index, 'teamName', e.target.value)
+                  }
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <option value="">チームを選択</option>
+                  {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map((team) => (
+                    <option key={team} value={team}>
+                      {team}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4">
+          <div className="flex items-center justify-end space-x-4">
+            {error && (
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            )}
+            <button
+              type="submit"
+              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              確認画面へ
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   )
 }

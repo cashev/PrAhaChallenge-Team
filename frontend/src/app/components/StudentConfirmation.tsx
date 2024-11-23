@@ -8,14 +8,14 @@ interface Student {
 }
 
 interface StudentConfirmationProps {
-  nextSeasonNumber: number
+  seasonNumber: number
   students: Student[]
-  handleSubmit: (students: Student[]) => Promise<void>
-  handleBack: (assignments: Student[]) => Promise<void>
+  handleSubmit: (seasonNumber: number, students: Student[]) => Promise<void>
+  handleBack: (seasonNumber: number, students: Student[]) => Promise<void>
 }
 
 export default function StudentConfirmation({
-  nextSeasonNumber,
+  seasonNumber,
   students,
   handleSubmit,
   handleBack,
@@ -41,7 +41,7 @@ export default function StudentConfirmation({
 
         <div className="mb-6 space-y-4">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-            {nextSeasonNumber}期として登録する受講生一覧
+            {seasonNumber}期に登録する受講生一覧
           </h2>
           <div className="rounded-md border border-gray-200 p-4 dark:border-gray-700">
             <table className="min-w-full">
@@ -90,13 +90,13 @@ export default function StudentConfirmation({
 
         <div className="flex space-x-4">
           <button
-            onClick={() => handleBack(students)}
+            onClick={() => handleBack(seasonNumber, students)}
             className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           >
             戻る
           </button>
           <button
-            onClick={() => handleSubmit(students)}
+            onClick={() => handleSubmit(seasonNumber, students)}
             className="flex-1 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
           >
             登録する

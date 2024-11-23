@@ -1,8 +1,9 @@
 import TeamAssignment from '@/app/components/TeamAssignment'
+import { getStudentsBySeason } from '@/lib/backend/student'
 import { temporaryStore } from '@/util/temporary-store'
 import { redirect } from 'next/navigation'
 
-export default function TeamAssignmentPage({
+export default async function TeamAssignmentPage({
   searchParams,
 }: {
   searchParams: { id: string }
@@ -11,12 +12,16 @@ export default function TeamAssignmentPage({
     redirect('/admin/students/register')
   }
 
-  const students = temporaryStore.getStudents(searchParams.id)
-  if (!students) {
+  const data = temporaryStore.getData(searchParams.id)
+  if (!data) {
     redirect('/admin/students/register')
   }
 
+  // 既存の受講生を取得
+  const existingStudents = await getStudentsBySeason(data.seasonNumber)
+
   async function handleSubmit(
+    seasonNumber: number,
     assignments: {
       firstName: string
       lastName: string
@@ -25,7 +30,10 @@ export default function TeamAssignmentPage({
     }[],
   ) {
     'use server'
-    const storeId = temporaryStore.setStudents(assignments)
+    const storeId = temporaryStore.setData({
+      seasonNumber,
+      students: assignments,
+    })
     redirect(`/admin/students/register/confirm?id=${storeId}`)
   }
 
@@ -35,7 +43,16 @@ export default function TeamAssignmentPage({
         <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
           チーム割り当て
         </h1>
-        <TeamAssignment students={students} onSubmit={handleSubmit} />
+        <TeamAssignment
+          seasonNumber={data.seasonNumber}
+          students={data.students}
+          existingStudents={existingStudents.map((student) => ({
+            firstName: student.FirstName,
+            lastName: student.LastName,
+            teamName: student.TeamName,
+          }))}
+          onSubmit={handleSubmit}
+        />
       </div>
     </div>
   )

@@ -51,6 +51,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/students", controller.GetStudents)
 	r.GET("/students/:id", controller.GetStudentInfo)
 	r.PATCH("/students/:id", controller.UpdateStudent)
+	r.GET("/students/season/:seasonNumber", controller.GetStudentsBySeason)
 	r.POST("/students/register", controller.RegisterStudents)
 
 	r.GET("/teams", controller.GetTeams)
@@ -75,7 +76,6 @@ func setupRouter() *gin.Engine {
 	r.GET("/progress/:season", controller.GetTasksAndProgressBySeason)
 
 	r.GET("/seasons", controller.GetSeasons)
-	r.GET("/seasons/next-number", controller.GetNextSeasonNumber)
 
 	r.GET("/status-change-requests/:id", controller.GetStatusChangeRequest)
 	r.GET("/status-change-requests/unprocessed", controller.GetUnprocessedStatusChangeRequests)
