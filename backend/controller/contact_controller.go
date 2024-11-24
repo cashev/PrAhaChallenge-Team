@@ -220,6 +220,16 @@ func ProcessStatusChange(c *gin.Context) {
 	// 再開以外の場合、受講生のステータスを更新する
 	if studentStatusChangeRequest.Type != "再開" {
 		updates := models.Student{}
+
+		// "休会" または "退会" の場合、TeamStudent を物理削除
+		if err := tx.Unscoped().Where("student_id = ?", studentStatusChangeRequest.StudentID).
+			Delete(&models.TeamStudent{}).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Failed to delete TeamStudent: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "TeamStudent の削除に失敗しました"})
+			return
+		}
+
 		switch studentStatusChangeRequest.Type {
 		case "休会":
 			updates.Status = "休会中"
