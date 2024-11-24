@@ -28,6 +28,13 @@ export interface StudentsResponse {
   totalCount: number
 }
 
+export interface StudentBySeasonResponse {
+  StudentID: number
+  FirstName: string
+  LastName: string
+  TeamName: string
+}
+
 export interface RegisterRequest {
   SeasonNumber: number
   Teams: RegisterTeam[]
@@ -39,6 +46,13 @@ export interface RegisterTeam {
 }
 
 export interface RegisterStudent {
+  FirstName: string
+  LastName: string
+  Email: string
+}
+
+export interface ExistingStudent {
+  StudentID: number
   FirstName: string
   LastName: string
 }
