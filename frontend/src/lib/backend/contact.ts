@@ -56,6 +56,17 @@ export const getUnprocessedStatusChangeRequests = async () => {
   return requests as StatusChangeRequest[]
 }
 
+export const getStatusChangeRequestUnprocessedCount = async () => {
+  const response = await fetch(
+    `${process.env.BACKEND_URL}/status-change-requests/unprocessed-count`,
+    {
+      next: { revalidate: 0 },
+    },
+  )
+  const { count } = await response.json()
+  return count as number
+}
+
 export const getProcessedStatusChangeRequests = async () => {
   const response = await fetch(
     `${process.env.BACKEND_URL}/status-change-requests/processed`,

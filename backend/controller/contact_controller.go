@@ -125,6 +125,16 @@ func GetUnprocessedStatusChangeRequests(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"requests": response})
 }
 
+func GetUnprocessedStatusChangeRequestCount(c *gin.Context) {
+	var count int64
+	if err := database.DB.Model(&models.StudentStatusChangeRequest{}).Where("status = ?", "未対応").Count(&count).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "未対応の問い合わせ件数の取得に失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"count": count})
+}
+
 func GetProcessedStatusChangeRequests(c *gin.Context) {
 	var requests []models.StudentStatusChangeRequest
 	database.DB.
