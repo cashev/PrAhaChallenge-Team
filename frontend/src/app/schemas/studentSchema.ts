@@ -5,14 +5,22 @@ export const studentSchema = z
     LastName: z.string().min(1, '姓は必須です'),
     FirstName: z.string().min(1, '名は必須です'),
     TeamID: z.number().nullable().optional(),
+    SeasonID: z.number().nullable().optional(),
     Status: z.enum(['受講中', '休会中', '退会済']),
     WithdrawalDate: z.string().nullable().optional(),
     SuspensionStartDate: z.string().nullable().optional(),
     SuspensionEndDate: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
-    // 受講中の場合はチーム名が必須
+    // 受講中の場合は期・チーム名が必須
     if (data.Status === '受講中') {
+      if (!data.SeasonID) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '受講中の場合、期は必須です',
+          path: ['SeasonID'],
+        })
+      }
       if (!data.TeamID) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
