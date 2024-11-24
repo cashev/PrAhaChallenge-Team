@@ -1,3 +1,4 @@
+import { STATUSES } from '@/consts/student'
 import { z } from 'zod'
 
 export const studentSchema = z
@@ -6,7 +7,7 @@ export const studentSchema = z
     FirstName: z.string().min(1, '名は必須です'),
     TeamID: z.number().nullable().optional(),
     SeasonID: z.number().nullable().optional(),
-    Status: z.enum(['受講中', '休会中', '退会済']),
+    Status: z.enum(STATUSES),
     WithdrawalDate: z.string().nullable().optional(),
     SuspensionStartDate: z.string().nullable().optional(),
     SuspensionEndDate: z.string().nullable().optional(),

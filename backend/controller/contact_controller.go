@@ -125,6 +125,16 @@ func GetUnprocessedStatusChangeRequests(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"requests": response})
 }
 
+func GetUnprocessedStatusChangeRequestCount(c *gin.Context) {
+	var count int64
+	if err := database.DB.Model(&models.StudentStatusChangeRequest{}).Where("status = ?", "未対応").Count(&count).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "未対応の問い合わせ件数の取得に失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"count": count})
+}
+
 func GetProcessedStatusChangeRequests(c *gin.Context) {
 	var requests []models.StudentStatusChangeRequest
 	database.DB.
@@ -217,31 +227,43 @@ func ProcessStatusChange(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// 受講生のステータスを更新する
-	updates := models.Student{}
-	switch studentStatusChangeRequest.Type {
-	case "休会":
-		updates.Status = "休会中"
-		updates.SuspensionStartDate = &studentStatusChangeRequest.RequestDate
+	// 再開以外の場合、受講生のステータスを更新する
+	if studentStatusChangeRequest.Type != "再開" {
+		updates := models.Student{}
 
-		// 月数で終了日を計算
-		suspensionEndDate := studentStatusChangeRequest.RequestDate.AddDate(0, int(*studentStatusChangeRequest.SuspensionPeriod), 0)
-		suspensionEndDate = suspensionEndDate.AddDate(0, 0, -suspensionEndDate.Day())
-		updates.SuspensionEndDate = &suspensionEndDate
+		// "休会" または "退会" の場合、TeamStudent を物理削除
+		if err := tx.Unscoped().Where("student_id = ?", studentStatusChangeRequest.StudentID).
+			Delete(&models.TeamStudent{}).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Failed to delete TeamStudent: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "TeamStudent の削除に失敗しました"})
+			return
+		}
 
-	case "退会":
-		updates.Status = "退会済"
-		updates.WithdrawalDate = &studentStatusChangeRequest.RequestDate
-	}
+		switch studentStatusChangeRequest.Type {
+		case "休会":
+			updates.Status = "休会中"
+			updates.SuspensionStartDate = &studentStatusChangeRequest.RequestDate
 
-	if err := tx.Model(&models.Student{}).
-		Where("id = ?", studentStatusChangeRequest.StudentID).
-		Select("status", "suspension_start_date", "suspension_end_date", "withdrawal_date").
-		Updates(updates).Error; err != nil {
-		tx.Rollback()
-		log.Printf("Update error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "受講生の更新に失敗しました"})
-		return
+			// 月数で終了日を計算
+			suspensionEndDate := studentStatusChangeRequest.RequestDate.AddDate(0, int(*studentStatusChangeRequest.SuspensionPeriod), 0)
+			suspensionEndDate = suspensionEndDate.AddDate(0, 0, -suspensionEndDate.Day())
+			updates.SuspensionEndDate = &suspensionEndDate
+
+		case "退会":
+			updates.Status = "退会済"
+			updates.WithdrawalDate = &studentStatusChangeRequest.RequestDate
+		}
+
+		if err := tx.Model(&models.Student{}).
+			Where("id = ?", studentStatusChangeRequest.StudentID).
+			Select("status", "suspension_start_date", "suspension_end_date", "withdrawal_date").
+			Updates(updates).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Update error: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "受講生の更新に失敗しました"})
+			return
+		}
 	}
 
 	if err := tx.Commit().Error; err != nil {

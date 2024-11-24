@@ -1,9 +1,12 @@
-import type { StatusChangeRequest } from './types/contact-type'
+import type {
+  StatusChangeRequest,
+  StatusChangeType,
+} from './types/contact-type'
 
 export const submitStatusChangeRequest = async (
   accessToken: string,
   studentId: number,
-  type: '休会' | '退会',
+  type: StatusChangeType,
   reason: string,
   requestDate: Date,
   suspensionPeriod?: number,
@@ -51,6 +54,17 @@ export const getUnprocessedStatusChangeRequests = async () => {
   )
   const { requests } = await response.json()
   return requests as StatusChangeRequest[]
+}
+
+export const getStatusChangeRequestUnprocessedCount = async () => {
+  const response = await fetch(
+    `${process.env.BACKEND_URL}/status-change-requests/unprocessed-count`,
+    {
+      next: { revalidate: 0 },
+    },
+  )
+  const { count } = await response.json()
+  return count as number
 }
 
 export const getProcessedStatusChangeRequests = async () => {

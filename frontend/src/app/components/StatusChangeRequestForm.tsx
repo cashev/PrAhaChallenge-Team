@@ -1,10 +1,12 @@
 'use client'
 
+import type { StatusChangeType } from '@/lib/backend/types/contact-type'
+import type { StudentInfoResponse } from '@/lib/backend/types/student-type'
 import { useRouter } from 'next/navigation'
 import type React from 'react'
 import { useEffect, useState } from 'react'
-
-type StatusChangeType = '休会' | '退会'
+import { z } from 'zod'
+import { statusChangeRequestSchema } from '../schemas/statusChangeRequestSchema'
 
 interface StatusChangeRequestFormProps {
   onSubmit: (
@@ -13,6 +15,7 @@ interface StatusChangeRequestFormProps {
     requestDate: Date,
     suspensionPeriod?: number,
   ) => Promise<void>
+  student: StudentInfoResponse
 }
 
 const getAvailableDates = (type: StatusChangeType) => {
@@ -25,14 +28,14 @@ const getAvailableDates = (type: StatusChangeType) => {
   // 今月/来月から12ヶ月分の日付を生成
   for (let i = startMonth; i < startMonth + 12; i++) {
     const targetMonth = new Date(today.getFullYear(), today.getMonth() + i)
-    if (type === '休会') {
-      // 月初日
-      dates.push(new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1))
-    } else {
+    if (type === '退会') {
       // 月末日
       dates.push(
         new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0),
       )
+    } else {
+      // 月初日
+      dates.push(new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1))
     }
   }
   return dates
@@ -47,6 +50,7 @@ const formatDate = (date: Date) => {
 
 const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
   onSubmit,
+  student,
 }) => {
   const router = useRouter()
   const [type, setType] = useState<StatusChangeType>('休会')
@@ -76,10 +80,20 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
     setError(null)
 
     try {
+      await statusChangeRequestSchema.parseAsync({
+        type,
+        reason,
+        requestDate,
+        suspensionPeriod,
+        studentStatus: student.Status,
+      })
       await onSubmit(type, reason, requestDate, suspensionPeriod)
       router.push('/student/contact/completion')
     } catch (err) {
-      if (err instanceof Error) {
+      if (err instanceof z.ZodError) {
+        const errorMessages = err.errors.map((e) => e.message).join(', ')
+        setError(`${errorMessages}`)
+      } else if (err instanceof Error) {
         setError(err.message)
       } else {
         setError('申請の送信に失敗しました。')
@@ -108,12 +122,17 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
         >
           <option value="休会">休会</option>
           <option value="退会">退会</option>
+          <option value="再開">再開</option>
         </select>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {type === '休会' ? '休会開始日（月初日）' : '退会日（月末日）'}
+          {type === '休会'
+            ? '休会開始日（月初日）'
+            : type === '再開'
+              ? '再開開始日'
+              : '退会日（月末日)'}
         </label>
         <select
           value={formatDate(requestDate)}
@@ -145,20 +164,22 @@ const StatusChangeRequestForm: React.FC<StatusChangeRequestFormProps> = ({
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          理由（任意）
-        </label>
-        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-          今後の運営のために理由をお聞かせください。
-        </p>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={4}
-          className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        />
-      </div>
+      {type !== '再開' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            理由（任意）
+          </label>
+          <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+            今後の運営のために理由をお聞かせください。
+          </p>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={4}
+            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+      )}
 
       <button
         type="submit"

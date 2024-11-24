@@ -1,5 +1,8 @@
 import { authOptions } from '@/app/api/auth/[...nextauth]/options'
-import { getStudentInfo } from '@/lib/backend/student'
+import {
+  getStudentInfo,
+  getStudentStatusChangeRequest,
+} from '@/lib/backend/student'
 import { getServerSession } from 'next-auth/next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -12,6 +15,9 @@ export default async function StudentPage() {
   }
 
   const studentInfo = await getStudentInfo(session.user.id)
+  const statusChangeRequest = await getStudentStatusChangeRequest(
+    studentInfo.StudentID,
+  )
 
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900">
@@ -26,6 +32,14 @@ export default async function StudentPage() {
             <h2 className="mb-4 text-lg font-medium leading-6 text-gray-900 dark:text-white">
               受講生情報
             </h2>
+            {statusChangeRequest && (
+              <div className="rounded-lg border-l-4 border-yellow-400 bg-yellow-50 p-4 dark:border-yellow-600 dark:bg-yellow-900">
+                <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                  現在、{statusChangeRequest.Type}
+                  申請中です。処理が完了するまでお待ちください。
+                </p>
+              </div>
+            )}
             <div className="mt-2 space-y-4">
               <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
                 <p className="text-lg text-gray-700 dark:text-gray-300">
@@ -39,6 +53,10 @@ export default async function StudentPage() {
                 <p className="text-lg text-gray-700 dark:text-gray-300">
                   <span className="font-semibold">名前：</span>
                   {studentInfo.FirstName} {studentInfo.LastName}
+                </p>
+                <p className="text-lg text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold">ステータス：</span>
+                  {studentInfo.Status}
                 </p>
               </div>
               <Link
