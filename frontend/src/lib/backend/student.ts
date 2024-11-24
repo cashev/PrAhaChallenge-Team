@@ -1,6 +1,7 @@
 import type {
   RegisterRequest,
   Student,
+  StudentBySeasonResponse,
   StudentInfoResponse,
   StudentsResponse,
 } from './types/student-type'
@@ -61,6 +62,19 @@ export async function updateStudent(student: Student): Promise<void> {
     const errorMessage = await response.text()
     throw new Error(errorMessage || '更新に失敗しました')
   }
+}
+
+export const getStudentsBySeason = async (
+  seasonNumber: number,
+): Promise<StudentBySeasonResponse[]> => {
+  const response = await fetch(
+    `${process.env.BACKEND_URL}/students/season/${seasonNumber}`,
+    {
+      cache: 'no-store',
+    },
+  )
+  const { students } = await response.json()
+  return students
 }
 
 export const registerStudents = async (
