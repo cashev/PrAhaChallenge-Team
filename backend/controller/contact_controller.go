@@ -217,31 +217,33 @@ func ProcessStatusChange(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// 受講生のステータスを更新する
-	updates := models.Student{}
-	switch studentStatusChangeRequest.Type {
-	case "休会":
-		updates.Status = "休会中"
-		updates.SuspensionStartDate = &studentStatusChangeRequest.RequestDate
+	// 再開以外の場合、受講生のステータスを更新する
+	if studentStatusChangeRequest.Type != "再開" {
+		updates := models.Student{}
+		switch studentStatusChangeRequest.Type {
+		case "休会":
+			updates.Status = "休会中"
+			updates.SuspensionStartDate = &studentStatusChangeRequest.RequestDate
 
-		// 月数で終了日を計算
-		suspensionEndDate := studentStatusChangeRequest.RequestDate.AddDate(0, int(*studentStatusChangeRequest.SuspensionPeriod), 0)
-		suspensionEndDate = suspensionEndDate.AddDate(0, 0, -suspensionEndDate.Day())
-		updates.SuspensionEndDate = &suspensionEndDate
+			// 月数で終了日を計算
+			suspensionEndDate := studentStatusChangeRequest.RequestDate.AddDate(0, int(*studentStatusChangeRequest.SuspensionPeriod), 0)
+			suspensionEndDate = suspensionEndDate.AddDate(0, 0, -suspensionEndDate.Day())
+			updates.SuspensionEndDate = &suspensionEndDate
 
-	case "退会":
-		updates.Status = "退会済"
-		updates.WithdrawalDate = &studentStatusChangeRequest.RequestDate
-	}
+		case "退会":
+			updates.Status = "退会済"
+			updates.WithdrawalDate = &studentStatusChangeRequest.RequestDate
+		}
 
-	if err := tx.Model(&models.Student{}).
-		Where("id = ?", studentStatusChangeRequest.StudentID).
-		Select("status", "suspension_start_date", "suspension_end_date", "withdrawal_date").
-		Updates(updates).Error; err != nil {
-		tx.Rollback()
-		log.Printf("Update error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "受講生の更新に失敗しました"})
-		return
+		if err := tx.Model(&models.Student{}).
+			Where("id = ?", studentStatusChangeRequest.StudentID).
+			Select("status", "suspension_start_date", "suspension_end_date", "withdrawal_date").
+			Updates(updates).Error; err != nil {
+			tx.Rollback()
+			log.Printf("Update error: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "受講生の更新に失敗しました"})
+			return
+		}
 	}
 
 	if err := tx.Commit().Error; err != nil {

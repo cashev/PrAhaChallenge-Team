@@ -35,12 +35,13 @@ type StudentsResponse struct {
 
 type StudentInfoResponse struct {
 	StudentID uint   `json:"StudentID"`
-	SeasonID  uint   `json:"SeasonID"`
-	Season    uint   `json:"Season"`
-	TeamID    uint   `json:"TeamID"`
+	SeasonID  *uint  `json:"SeasonID"`
+	Season    *uint  `json:"Season"`
+	TeamID    *uint  `json:"TeamID"`
 	TeamName  string `json:"TeamName"`
 	FirstName string `json:"FirstName"`
 	LastName  string `json:"LastName"`
+	Status    string `json:"Status"`
 }
 
 type UpdateStudentRequest struct {
@@ -188,18 +189,6 @@ func GetStudentInfo(c *gin.Context) {
 		Where("id = ?", studentID).
 		First(&student)
 
-	if result.Error == nil && len(student.TeamStudents) > 0 {
-		studentInfo = StudentInfoResponse{
-			StudentID: student.ID,
-			FirstName: student.FirstName,
-			LastName:  student.LastName,
-			TeamID:    student.TeamStudents[0].Team.ID,
-			TeamName:  student.TeamStudents[0].Team.Name,
-			SeasonID:  student.TeamStudents[0].Team.SeasonTeams[0].Season.ID,
-			Season:    uint(student.TeamStudents[0].Team.SeasonTeams[0].Season.Number),
-		}
-	}
-
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch student info"})
 		return
@@ -208,6 +197,30 @@ func GetStudentInfo(c *gin.Context) {
 	if result.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Student not found"})
 		return
+	}
+
+	if len(student.TeamStudents) > 0 {
+		studentInfo = StudentInfoResponse{
+			StudentID: student.ID,
+			FirstName: student.FirstName,
+			LastName:  student.LastName,
+			TeamID:    &student.TeamStudents[0].Team.ID,
+			TeamName:  student.TeamStudents[0].Team.Name,
+			SeasonID:  &student.TeamStudents[0].Team.SeasonTeams[0].Season.ID,
+			Season:    &student.TeamStudents[0].Team.SeasonTeams[0].Season.Number,
+			Status:    student.Status,
+		}
+	} else {
+		studentInfo = StudentInfoResponse{
+			StudentID: student.ID,
+			FirstName: student.FirstName,
+			LastName:  student.LastName,
+			TeamID:    nil,
+			TeamName:  "",
+			SeasonID:  nil,
+			Season:    nil,
+			Status:    student.Status,
+		}
 	}
 
 	c.JSON(http.StatusOK, studentInfo)
@@ -441,4 +454,23 @@ func RegisterStudents(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Students registered successfully"})
+}
+
+func GetStatusChangeRequestByStudentID(c *gin.Context) {
+	studentID := c.Param("id")
+	var response models.StudentStatusChangeRequest
+
+	result := database.DB.Where("student_id = ? AND status = ?", studentID, "未対応").Find(&response)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusOK, gin.H{"data": nil})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": response})
 }

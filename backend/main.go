@@ -52,6 +52,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/students/:id", controller.GetStudentInfo)
 	r.PATCH("/students/:id", controller.UpdateStudent)
 	r.POST("/students/register", controller.RegisterStudents)
+	r.GET("/students/:id/status-change-requests", controller.GetStatusChangeRequestByStudentID)
 
 	r.GET("/teams", controller.GetTeams)
 

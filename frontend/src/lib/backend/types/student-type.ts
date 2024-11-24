@@ -6,6 +6,7 @@ export interface StudentInfoResponse {
   TeamName: string
   FirstName: string
   LastName: string
+  Status: string
 }
 
 export interface Student {
@@ -40,4 +41,16 @@ export interface RegisterTeam {
 export interface RegisterStudent {
   FirstName: string
   LastName: string
+}
+
+export interface StudentChangeRequestResponse {
+  ID: number
+  StudentID: number
+  Type: string
+  RequestDate: string
+  Reason: string
+  Status: string
+  SubmittedDate: string
+  ProcessedDate: string
+  SuspensionPeriod: string
 }

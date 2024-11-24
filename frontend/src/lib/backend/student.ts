@@ -1,6 +1,7 @@
 import type {
   RegisterRequest,
   Student,
+  StudentChangeRequestResponse,
   StudentInfoResponse,
   StudentsResponse,
 } from './types/student-type'
@@ -72,4 +73,17 @@ export const registerStudents = async (
   })
   const { message } = await response.json()
   return message
+}
+
+export const getStudentStatusChangeRequest = async (
+  studentId: number,
+): Promise<StudentChangeRequestResponse> => {
+  const response = await fetch(
+    `${process.env.BACKEND_URL}/students/${studentId}/status-change-requests`,
+    {
+      cache: 'no-store',
+    },
+  )
+  const { data } = await response.json()
+  return data
 }

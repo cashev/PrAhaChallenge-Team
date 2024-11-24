@@ -40,6 +40,15 @@ export default async function StatusChangeRequestDetailPage({
         </Link>
       </div>
 
+      <div className="text-red-500">
+        <p>
+          休会・退会の場合、対応済にすると受講生のステータスが変わり希望日が設定、期・チームから外れます。
+        </p>
+        <p>
+          再開の場合は対応済になるだけのため、期・チームを設定してから対応済にしてください。
+        </p>
+      </div>
+
       <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
         <div className="p-6">
           <div className="mb-6">

@@ -1,9 +1,12 @@
-import type { StatusChangeRequest } from './types/contact-type'
+import type {
+  StatusChangeRequest,
+  StatusChangeType,
+} from './types/contact-type'
 
 export const submitStatusChangeRequest = async (
   accessToken: string,
   studentId: number,
-  type: '休会' | '退会',
+  type: StatusChangeType,
   reason: string,
   requestDate: Date,
   suspensionPeriod?: number,

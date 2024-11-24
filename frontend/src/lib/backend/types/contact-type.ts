@@ -1,4 +1,4 @@
-export type StatusChangeType = '休会' | '退会'
+export type StatusChangeType = '休会' | '退会' | '再開'
 
 export type StatusChangeRequestStatus = '未対応' | '対応済'
 
