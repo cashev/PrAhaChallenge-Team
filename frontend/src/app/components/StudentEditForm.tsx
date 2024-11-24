@@ -1,11 +1,14 @@
 import { STATUSES } from '@/consts/student'
+import { getSeasons } from '@/lib/backend/season'
 import { updateStudent } from '@/lib/backend/student'
 import { getTeams } from '@/lib/backend/team'
+import type { GetSeasonsResponse } from '@/lib/backend/types/season-type'
 import type { Student } from '@/lib/backend/types/student-type'
 import type { GetTeamsResponse } from '@/lib/backend/types/team-type'
 import { formatDate } from '@/util/dateUtils'
 import type React from 'react'
 import { useEffect, useState } from 'react'
+import { Bounce, toast } from 'react-toastify'
 import { studentSchema } from '../schemas/studentSchema'
 
 interface StudentEditFormProps {
@@ -21,22 +24,50 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [errors, setErrors] = useState<any>({})
   const [teams, setTeams] = useState<GetTeamsResponse[]>([])
+  const [seasons, setSeasons] = useState<GetSeasonsResponse[]>([])
   const [apiError, setApiError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [filteredTeams, setFilteredTeams] = useState<GetTeamsResponse[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
       const teamsData = await getTeams()
       setTeams(teamsData)
+      const seasonsData = await getSeasons()
+      setSeasons(seasonsData)
     }
     fetchData()
   }, [])
+
+  useEffect(() => {
+    if (!formData.SeasonID) {
+      setFilteredTeams([])
+      return
+    }
+
+    const filtered = teams.filter(
+      (team) => String(team.SeasonID) === String(formData.SeasonID),
+    )
+    setFilteredTeams(filtered)
+  }, [formData.SeasonID, teams])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target
 
-    if (name === 'Status') {
+    if (name === 'SeasonID') {
+      setFormData({
+        ...formData,
+        SeasonID: value === '' ? undefined : Number(value),
+        TeamID: undefined,
+      })
+    } else if (name === 'TeamID') {
+      setFormData({
+        ...formData,
+        [name]: value === '' ? undefined : Number(value),
+      })
+    } else if (name === 'Status') {
       setFormData({
         ...formData,
         Status: value,
@@ -53,30 +84,40 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
             ? undefined
             : formData.WithdrawalDate,
       })
-    } else if (name === 'TeamID') {
+    } else {
       setFormData({
         ...formData,
-        [name]: value === '' ? undefined : Number(value),
-        SeasonNumber: value === '' ? undefined : formData.SeasonNumber,
+        [name]: value,
       })
-    } else {
-      setFormData({ ...formData, [name]: value })
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
     const parsed = studentSchema.safeParse(formData)
 
     if (parsed.success) {
       try {
         await updateStudent(formData)
         setApiError(null)
-        console.log('受講生の保存に成功しました')
+        toast.success('受講生情報を保存しました。', {
+          position: 'top-center',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+          transition: Bounce,
+        })
         onDataUpdate()
       } catch (error) {
         console.error('受講生の保存中にエラーが発生しました:', error)
         setApiError('更新に失敗しました。もう一度お試しください。')
+      } finally {
+        setIsSubmitting(false)
       }
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,6 +127,7 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
       })
       setErrors(formErrors)
       setApiError(null)
+      setIsSubmitting(false)
     }
   }
 
@@ -140,19 +182,28 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
 
       <div>
         <label
-          htmlFor="SeasonNumber"
+          htmlFor="SeasonID"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           期
         </label>
-        <input
-          type="text"
-          id="SeasonNumber"
-          name="SeasonNumber"
-          value={formData.SeasonNumber ?? ''}
-          className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm sm:text-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100"
-          disabled
-        />
+        <select
+          id="SeasonID"
+          name="SeasonID"
+          value={formData.SeasonID ?? ''}
+          onChange={handleChange}
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-100"
+        >
+          <option value="">未所属</option>
+          {seasons.map((season) => (
+            <option key={season.ID} value={season.ID}>
+              {season.Number}
+            </option>
+          ))}
+        </select>
+        {errors.SeasonID && (
+          <p className="text-sm text-red-500">{errors.SeasonID}</p>
+        )}
       </div>
 
       <div>
@@ -170,7 +221,7 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
           className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-100"
         >
           <option value="">未所属</option>
-          {teams?.map((team) => (
+          {filteredTeams.map((team) => (
             <option key={team.ID} value={team.ID}>
               {team.Name}
             </option>
@@ -273,9 +324,10 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
 
       <button
         type="submit"
+        disabled={isSubmitting}
         className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
       >
-        保存
+        {isSubmitting ? '保存中...' : '保存'}
       </button>
       {apiError && <p className="text-sm text-red-500">{apiError}</p>}
     </form>
